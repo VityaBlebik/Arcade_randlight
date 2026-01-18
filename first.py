@@ -1,7 +1,0 @@
-print("hello world")
-print("gello tuf")
-a = int(input())
-a = int(input())
-a = int(input())
-a = int(input())
-a = int(input())
