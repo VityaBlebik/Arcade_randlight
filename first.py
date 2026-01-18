@@ -1,5 +1,2 @@
-print("hello world")
-print("gello tuf")
-print("farfwert")
-a = int(input())
-# ну и тут что-то
+strochka = """
+ffffarwertwrtyetyw457yw4574w57w456w4567w456w456w45"""
