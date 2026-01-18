@@ -1,5 +1,5 @@
 print("hello world")
 print("gello tuf")
 print("farfwert")
-print("Fff")
-print("zzzz")
+a = int(input())
+# ну и тут что-то
