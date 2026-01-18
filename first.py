@@ -1,4 +1,9 @@
 print("hello world")
+print("gello tuf")
+print("farfwert")
+print("Fff")
+print("zzzz")
+print("hello world")
 a = 10
 #  ну допустим тут фикс багов
 #  еще что-то
