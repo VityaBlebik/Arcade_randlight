@@ -10,3 +10,4 @@ a = 10
 b = 10
 print(f"fff{b}")
 #  ну и еще 3 bugFix
+print("ffffaefwetfgwrt")
