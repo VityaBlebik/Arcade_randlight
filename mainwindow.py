@@ -14,7 +14,7 @@ class MyGame(arcade.Window):
 
     def on_draw(self):
         self.clear()
-        ...
+        print("aaa")
 
 
 def setup_game(width=600, height=400, title="Rosetta", lines=None, colors=None, font_size=40):
