@@ -1,5 +1,5 @@
 import arcade
-import hero
+from hero import Hero
 
 
 screen_width = 1600
@@ -18,7 +18,7 @@ class Game(arcade.Window):
     def setup(self):
         self.hero_list = arcade.SpriteList()
         # Загружаем текстуру (изображение)
-        self.hero = hero.Hero(self.game_width // 2, self.game_height // 2)
+        self.hero = Hero(self.game_width // 2, self.game_height // 2)
         self.hero_list.append(self.hero)
 
     def on_draw(self):
