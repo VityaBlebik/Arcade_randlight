@@ -9,7 +9,7 @@ class Hero(arcade.Sprite):
         super().__init__()
         
         # Основные характеристики
-        self.speed = 50
+        self.speed = 1
         self.health = 3
         
         # Загрузка текстур
