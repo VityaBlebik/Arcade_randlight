@@ -1,6 +1,7 @@
 import arcade
 import random
 import time
+from arcade.gui import UIManager, UIFlatButton
 
 from hero import Hero
 from car import Car
@@ -31,6 +32,7 @@ class Game(arcade.Window):
         self.start_game_time = time.time()
         self.start_game_interval = float(str(random.uniform(1, 2))[:4])
         self.start_game_flag = False
+
         self.hero_walls = arcade.SpriteList()
         self.hero_walls.append(arcade.SpriteSolidColor(1, 100, center_x=self.game_width // 2 - 50, center_y=self.game_height // 2, color=(0, 0, 0, 0))) # левая
         self.hero_walls.append(arcade.SpriteSolidColor(1, 100, center_x=self.game_width // 2 + 50, center_y=self.game_height // 2, color=(0, 0, 0, 0))) # правая
@@ -39,12 +41,27 @@ class Game(arcade.Window):
         
         self.hero_physics_engine = arcade.PhysicsEngineSimple(self.hero, self.hero_walls)
 
+        self.horizontal_light_texture = "images/light_greenh.png"
+        self.horizontal_light = arcade.Sprite(self.horizontal_light_texture, scale=1, center_x=self.game_width // 2 - 60, center_y=self.game_height // 2)
+        self.horizontal_light_list = arcade.SpriteList()
+        self.horizontal_light_list.append(self.horizontal_light)
+
+        self.vertical_light_texture = "images/light_greenv.png"
+        self.vertical_light = arcade.Sprite(self.vertical_light_texture, scale=1, center_x=self.game_width // 2, center_y=self.game_height // 2 + 60)
+        self.vertica_light_list = arcade.SpriteList()
+        self.vertica_light_list.append(self.vertical_light)
+
+        self.horizontal_light_button = UIFlatButton(text="", width=200, height=50, color=arcade.color.BLUE)
+        #self.horizontal_light_button.on_click = ЕЩЕ НЕ ДОДЕЛАНО, ВСЕ ВСЕТОФОРЫ ДОЛЖНЫ БЫТЬ ОТДЕЛЬНЫМИ ФАЙЛАМИ
+
     def on_draw(self):
         self.clear()
         arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(self.width // 2, self.height // 2, self.game_width, self.game_height))
         self.hero_list.draw()
         self.horizontal_car_list.draw()
         self.vertical_car_list.draw()
+        self.horizontal_light_list.draw()
+        self.vertica_light_list.draw()
         arcade.draw_rect_filled(arcade.rect.XYWH(175, screen_height // 2, 350, 900), arcade.color.BLACK)
         arcade.draw_rect_filled(arcade.rect.XYWH(screen_width - 175, screen_height // 2, 350, 900), arcade.color.BLACK)
     
