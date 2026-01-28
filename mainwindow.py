@@ -70,17 +70,16 @@ class MyGUIWindow(arcade.Window):
                                font_size=14, is_editable=True, scroll_speed=10)
         self.box_layout.add(text_area)
 
-        flat_button = UIFlatButton(text="Плоская Кнопка", width=200, height=50, color=arcade.color.BLUE)
+
+        texture_normal = arcade.load_texture("images/TEST.png")
+        texture_hovered = arcade.load_texture("images/TEST.png")
+        texture_pressed = arcade.load_texture("images/TEST.png")
+        texture_button = UITextureButton(texture=texture_normal,color=arcade.color.GREEN)
+        
+        flat_button = UIFlatButton(text="Плоская Кнопка", width=200, height=50, color=arcade.color.GREEN, texture=texture_normal)
         flat_button.on_click = self.on_button_click
         self.box_layout.add(flat_button) 
 
-        texture_normal = arcade.load_texture(":resources:/gui_basic_assets/button/red_normal.png")
-        texture_hovered = arcade.load_texture(":resources:/gui_basic_assets/button/red_hover.png")
-        texture_pressed = arcade.load_texture(":resources:/gui_basic_assets/button/red_press.png")
-        texture_button = UITextureButton(texture=texture_normal, 
-                                         texture_hovered=texture_hovered,
-                                         texture_pressed=texture_pressed,
-                                         scale=1.0)
         texture_button.on_click = lambda event: print("Текстурный клик!")
         self.box_layout.add(texture_button)
 

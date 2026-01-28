@@ -1,10 +1,11 @@
 import arcade
 import random
 import time
-from arcade.gui import UIManager, UIFlatButton
+from arcade.gui import UIManager,  UITextureButton
 
 from hero import Hero
 from car import Car
+from light import Light
 
 screen_width = 1600
 screen_height= 900
@@ -13,7 +14,7 @@ secreen_title = "Простая отрисовка изображения"
 
 class Game(arcade.Window):
     def __init__(self, width, height, title,):
-        super().__init__(width, height, title, fullscreen=True)
+        super().__init__(width, height, title, fullscreen=False)
         self.game_width = width
         self.game_height = height
         self.texture = arcade.load_texture("images/background.png")
@@ -41,19 +42,28 @@ class Game(arcade.Window):
         
         self.hero_physics_engine = arcade.PhysicsEngineSimple(self.hero, self.hero_walls)
 
-        self.horizontal_light_texture = "images/light_greenh.png"
-        self.horizontal_light = arcade.Sprite(self.horizontal_light_texture, scale=1, center_x=self.game_width // 2 - 60, center_y=self.game_height // 2)
+        self.horizontal_light = Light(0, 1, self.game_width // 2 - 60, self.game_height // 2)
         self.horizontal_light_list = arcade.SpriteList()
         self.horizontal_light_list.append(self.horizontal_light)
 
-        self.vertical_light_texture = "images/light_greenv.png"
-        self.vertical_light = arcade.Sprite(self.vertical_light_texture, scale=1, center_x=self.game_width // 2, center_y=self.game_height // 2 + 60)
+        self.vertical_light = Light(1, 1, self.game_width // 2, self.game_height // 2 + 60)
         self.vertica_light_list = arcade.SpriteList()
         self.vertica_light_list.append(self.vertical_light)
 
-        self.horizontal_light_button = UIFlatButton(text="", width=200, height=50, color=arcade.color.BLUE)
-        #self.horizontal_light_button.on_click = ЕЩЕ НЕ ДОДЕЛАНО, ВСЕ ВСЕТОФОРЫ ДОЛЖНЫ БЫТЬ ОТДЕЛЬНЫМИ ФАЙЛАМИ
+        self.light_manager = UIManager()
+        self.light_manager.enable()
 
+        self.horizantal_light_texture = arcade.load_texture("images/light_h.png")
+        self.horizontal_light_button = UITextureButton(x=self.game_width // 2 - 71, y=self.game_height // 2 - 50, width=21, height=100, texture=self.horizantal_light_texture)
+        self.horizontal_light_button.on_click = self.horizontal_light.change_status
+        self.light_manager.add(self.horizontal_light_button)
+        
+        self.vertical_light_texture = arcade.load_texture("images/light_v.png")
+        self.vertical_light_button =  UITextureButton(x=self.game_width // 2 - 50, y=self.game_height // 2 + 49, width=100, height=21, texture=self.vertical_light_texture)
+        self.vertical_light_button.on_click = self.vertical_light.change_status
+        self.light_manager.add(self.vertical_light_button)
+        
+        
     def on_draw(self):
         self.clear()
         arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(self.width // 2, self.height // 2, self.game_width, self.game_height))
@@ -62,6 +72,7 @@ class Game(arcade.Window):
         self.vertical_car_list.draw()
         self.horizontal_light_list.draw()
         self.vertica_light_list.draw()
+        self.light_manager.draw()
         arcade.draw_rect_filled(arcade.rect.XYWH(175, screen_height // 2, 350, 900), arcade.color.BLACK)
         arcade.draw_rect_filled(arcade.rect.XYWH(screen_width - 175, screen_height // 2, 350, 900), arcade.color.BLACK)
     
