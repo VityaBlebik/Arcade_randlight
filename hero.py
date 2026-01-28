@@ -9,7 +9,7 @@ class Hero(arcade.Sprite):
         super().__init__()
         
         # Основные характеристики
-        self.speed = 1
+        self.speed = 40
         self.health = 3
         
         # Загрузка текстур
@@ -21,8 +21,8 @@ class Hero(arcade.Sprite):
         
     def update(self, dt):
         """ Перемещение персонажа """
-        self.center_x += self.change_x * dt
-        self.center_y += self.change_y * dt
+        self.center_x += self.change_x
+        self.center_y += self.change_y
         
         # Ограничение в пределах экрана
         self.center_x = max(self.width/2, min(screen_width - self.width/2, self.center_x))

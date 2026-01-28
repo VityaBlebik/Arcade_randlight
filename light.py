@@ -15,11 +15,11 @@ class Light(arcade.Sprite):
     def change_texture(self, status, place):
         if status == 1:
             if place == 0:
-                self.texture =  arcade.load_texture("images/light_greenh.png")
+                self.texture = arcade.load_texture("images/light_greenh.png")
             else:
-                self.texture =  arcade.load_texture("images/light_greenv.png")
+                self.texture = arcade.load_texture("images/light_greenv.png")
         else:
             if place == 0:
-                 self.texture =  arcade.load_texture("images/light_redh.png")
+                 self.texture = arcade.load_texture("images/light_redh.png")
             else:       
                  self.texture = arcade.load_texture( "images/light_redv.png")

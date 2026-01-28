@@ -21,8 +21,8 @@ class Game(arcade.Window):
         self.setup()
 
     def setup(self):
-        self.interval0 = 2
-        self.interval1 = 4
+        self.interval0 = 20
+        self.interval1 = 40
         self.hero_list = arcade.SpriteList()
         self.horizontal_car_list = arcade.SpriteList()
         self.vertical_car_list = arcade.SpriteList()
@@ -47,8 +47,8 @@ class Game(arcade.Window):
         self.horizontal_light_list.append(self.horizontal_light)
 
         self.vertical_light = Light(1, 1, self.game_width // 2, self.game_height // 2 + 60)
-        self.vertica_light_list = arcade.SpriteList()
-        self.vertica_light_list.append(self.vertical_light)
+        self.vertical_light_list = arcade.SpriteList()
+        self.vertical_light_list.append(self.vertical_light)
 
         self.light_manager = UIManager()
         self.light_manager.enable()
@@ -71,27 +71,50 @@ class Game(arcade.Window):
         self.horizontal_car_list.draw()
         self.vertical_car_list.draw()
         self.horizontal_light_list.draw()
-        self.vertica_light_list.draw()
+        self.vertical_light_list.draw()
         self.light_manager.draw()
         arcade.draw_rect_filled(arcade.rect.XYWH(175, screen_height // 2, 350, 900), arcade.color.BLACK)
         arcade.draw_rect_filled(arcade.rect.XYWH(screen_width - 175, screen_height // 2, 350, 900), arcade.color.BLACK)
     
     def on_update(self, dt):
+        self.dt = dt
         self.hero_physics_engine.update()
         self.horizontal_car_list.update(dt)
         self.vertical_car_list.update(dt)
         self.make_car()
+        self.check_collisions()
+
     
+    def check_collisions(self):
+            for car in self.horizontal_car_list:
+                if car.center_x > self.game_width - 350 + car.width:
+                    car.remove_from_sprite_lists()
+                
+                self.stop_cars = arcade.check_for_collision_with_list(car, self.horizontal_car_list)
+                for stop_car in self.stop_cars:
+                    stop_car.drive = False
+                if self.horizontal_light.status == -1:
+                    self.stop_cars_by_horizontal_light = arcade.check_for_collision_with_list(self.horizontal_light, self.horizontal_car_list)
+                    for stop_car_by_horizontal_light in self.stop_cars_by_horizontal_light:
+                        stop_car_by_horizontal_light.drive = False
+                else:
+                        stop_car_by_horizontal_light.drive = True
+
+            
+            # elif self.game_width // 2 - 50 <= car.center_x <= self.game_width // 2 + 50:
+            #     #проверка столкновений с машинами из вертикали
+            # else:
+            #     if
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.W:
-            self.hero.change_y = self.hero.speed
+            self.hero.change_y = self.hero.speed * self.dt
         elif key == arcade.key.S:
-            self.hero.change_y = -self.hero.speed
+            self.hero.change_y = -self.hero.speed * self.dt
         elif key == arcade.key.A:
-            self.hero.change_x = -self.hero.speed
+            self.hero.change_x = -self.hero.speed * self.dt
         elif key == arcade.key.D:
-           self.hero.change_x = self.hero.speed
+           self.hero.change_x = self.hero.speed * self.dt
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W or key == arcade.key.S:
@@ -120,7 +143,7 @@ class Game(arcade.Window):
                     car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place)
                     self.horizontal_car_list.append(car)
                 else: #  вертикаль
-                    car = Car(800 + random.randint(-20, 20), screen_height + 60, self.place)
+                    car = Car(self.game_width // 2 + random.randint(-20, 20), screen_height + 60, self.place)
                     self.vertical_car_list.append(car)
                 self.start_game_flag = True
                 self.make_car_start_time = time.time()
