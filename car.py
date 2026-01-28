@@ -14,7 +14,7 @@ class Car(arcade.Sprite):
         self.center_y = start_y
         self.place = place
         # Основные характеристики
-        self.speed = 50#random.randint(10, 25)
+        self.speed = random.randint(40, 55)
         self.drive = True
         
         # Загрузка текстур
