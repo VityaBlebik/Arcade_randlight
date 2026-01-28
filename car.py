@@ -14,14 +14,14 @@ class Car(arcade.Sprite):
         self.center_y = start_y
         self.place = place
         # Основные характеристики
-        self.speed = 50 # random.randint(10, 25)
+        self.speed = 50#random.randint(10, 25)
         self.drive = True
         
         # Загрузка текстур
         if self.place == 0:
-            self.texture = arcade.load_texture("images/carh1.png")
+            self.texture = arcade.load_texture("images/carh.png")
         else:
-            self.texture = arcade.load_texture("images/carv1.png")
+            self.texture = arcade.load_texture("images/carv.png")
         
         
         

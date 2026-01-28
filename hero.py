@@ -1,7 +1,5 @@
 import arcade
-
-screen_width = 1600
-screen_height= 900
+import time
 
 
 class Hero(arcade.Sprite):
@@ -11,6 +9,7 @@ class Hero(arcade.Sprite):
         # Основные характеристики
         self.speed = 40
         self.health = 3
+        self.damage_no = True
         
         # Загрузка текстур
         self.texture = arcade.load_texture("images/hero.png")
@@ -23,7 +22,14 @@ class Hero(arcade.Sprite):
         """ Перемещение персонажа """
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+    def get_damage(self):
+        if self.damage_no:
+            self.damage_no_timer_start = time.time()
+            self.damage_no = False
+            self.health -= 1
+            print(self.health)
+        self.damage_no_timer_end = time.time()
+        if self.damage_no_timer_end - self.damage_no_timer_start >= 5:
+            self.damage_no = True
         
-        # Ограничение в пределах экрана
-        self.center_x = max(self.width/2, min(screen_width - self.width/2, self.center_x))
-        self.center_y = max(self.height/2, min(screen_height - self.height/2, self.center_y))

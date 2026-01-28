@@ -21,8 +21,8 @@ class Game(arcade.Window):
         self.setup()
 
     def setup(self):
-        self.interval0 = 2
-        self.interval1 = 4
+        self.interval0 = 3
+        self.interval1 = 7
         self.hero_list = arcade.SpriteList()
         self.horizontal_car_list = arcade.SpriteList()
         self.vertical_car_list = arcade.SpriteList()
@@ -31,7 +31,7 @@ class Game(arcade.Window):
         self.hero_list.append(self.hero)
 
         self.start_game_time = time.time()
-        self.start_game_interval = float(str(random.uniform(1, 2))[:4])
+        self.start_game_interval = float(str(random.uniform(2, 4))[:4])
         self.start_game_flag = False
 
         self.hero_walls = arcade.SpriteList()
@@ -167,7 +167,7 @@ class Game(arcade.Window):
             if self.make_car_end_time - self.make_car_start_time >= self.make_car_interval:
                 self.make_car_interval = random.uniform(self.interval0, self.interval1)
                 self.make_car_start_time = time.time()
-                self.place = random.choice([0, 1])
+                self.place = 0#random.choice([0, 1])
                 if self.place == 0: #  горизонталь
                     car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place)
                     self.horizontal_car_list.append(car)
@@ -177,7 +177,7 @@ class Game(arcade.Window):
         else:
             self.add_car_time = time.time()
             if self.add_car_time - self.start_game_time >= self.start_game_interval:
-                self.place = random.choice([0, 1])
+                self.place = 0#random.choice([0, 1])
                 if self.place == 0: #  горизонталь
                     car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place)
                     self.horizontal_car_list.append(car)
