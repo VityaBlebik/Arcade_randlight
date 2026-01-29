@@ -17,7 +17,7 @@ secreen_title = "Простая отрисовка изображения"
 
 class Game(arcade.Window):
     def __init__(self, width, height, title,):
-        super().__init__(width, height, title, fullscreen=False)
+        super().__init__(width, height, title, fullscreen=True)
         self.game_width = width
         self.game_height = height
         self.texture = arcade.load_texture("images/background.png")
@@ -27,8 +27,8 @@ class Game(arcade.Window):
     def setup(self):
         self.batch = Batch()
         self.start_timer_limit = 10
-        self.interval0 = 6
-        self.interval1 = 7
+        self.interval0 = 3
+        self.interval1 = 5
 
         self.hero_list = arcade.SpriteList()
         self.horizontal_car_list = arcade.SpriteList()
@@ -200,7 +200,7 @@ class Game(arcade.Window):
             if self.make_car_end_time - self.make_car_start_time >= self.make_car_interval:
                 self.make_car_interval = random.uniform(self.interval0, self.interval1)
                 self.make_car_start_time = time.time()
-                self.place = 1#random.choice([0, 1])
+                self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
                     car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place)
                     self.horizontal_car_list.append(car)
@@ -210,7 +210,7 @@ class Game(arcade.Window):
         else:
             self.add_car_time = time.time()
             if self.add_car_time - self.start_game_time >= self.start_game_interval:
-                self.place = 1#random.choice([0, 1])
+                self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
                     car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place,)
                     self.horizontal_car_list.append(car)
