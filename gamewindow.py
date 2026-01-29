@@ -2,6 +2,7 @@ import arcade
 import random
 import time
 from arcade.gui import UIManager,  UITextureButton
+from pyglet.graphics import Batch
 
 import game_db as db
 
@@ -16,7 +17,7 @@ secreen_title = "Простая отрисовка изображения"
 
 class Game(arcade.Window):
     def __init__(self, width, height, title,):
-        super().__init__(width, height, title, fullscreen=True)
+        super().__init__(width, height, title, fullscreen=False)
         self.game_width = width
         self.game_height = height
         self.texture = arcade.load_texture("images/background.png")
@@ -24,8 +25,9 @@ class Game(arcade.Window):
         self.setup()
 
     def setup(self):
+        self.batch = Batch()
         self.start_timer_limit = 10
-        self.interval0 = 3
+        self.interval0 = 6
         self.interval1 = 7
 
         self.hero_list = arcade.SpriteList()
@@ -80,6 +82,10 @@ class Game(arcade.Window):
         self.light_manager.draw()
         arcade.draw_rect_filled(arcade.rect.XYWH(175, screen_height // 2, 350, 900), arcade.color.BLACK)
         arcade.draw_rect_filled(arcade.rect.XYWH(screen_width - 175, screen_height // 2, 350, 900), arcade.color.BLACK)
+        for car in self.horizontal_car_list:
+            car.countdown.draw()
+        for car in self.vertical_car_list:
+            car.countdown.draw()
     
     def on_update(self, dt):
         self.dt = dt
@@ -107,6 +113,9 @@ class Game(arcade.Window):
         for car in self.vertical_car_list:
             if car.drive == False and car.timer_start == False:
                 car.timer()
+
+        
+
         
     
     def check_collisions(self):
@@ -191,7 +200,7 @@ class Game(arcade.Window):
             if self.make_car_end_time - self.make_car_start_time >= self.make_car_interval:
                 self.make_car_interval = random.uniform(self.interval0, self.interval1)
                 self.make_car_start_time = time.time()
-                self.place = random.choice([0, 1])
+                self.place = 1#random.choice([0, 1])
                 if self.place == 0: #  горизонталь
                     car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place)
                     self.horizontal_car_list.append(car)
@@ -201,7 +210,7 @@ class Game(arcade.Window):
         else:
             self.add_car_time = time.time()
             if self.add_car_time - self.start_game_time >= self.start_game_interval:
-                self.place = random.choice([0, 1])
+                self.place = 1#random.choice([0, 1])
                 if self.place == 0: #  горизонталь
                     car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place,)
                     self.horizontal_car_list.append(car)
