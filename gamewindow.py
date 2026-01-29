@@ -3,6 +3,8 @@ import random
 import time
 from arcade.gui import UIManager,  UITextureButton
 
+import game_db as db
+
 from hero import Hero
 from car import Car
 from light import Light
@@ -14,15 +16,18 @@ secreen_title = "Простая отрисовка изображения"
 
 class Game(arcade.Window):
     def __init__(self, width, height, title,):
-        super().__init__(width, height, title, fullscreen=False)
+        super().__init__(width, height, title, fullscreen=True)
         self.game_width = width
         self.game_height = height
         self.texture = arcade.load_texture("images/background.png")
+        db.start()
         self.setup()
 
     def setup(self):
+        self.start_timer_limit = 10
         self.interval0 = 3
         self.interval1 = 7
+
         self.hero_list = arcade.SpriteList()
         self.horizontal_car_list = arcade.SpriteList()
         self.vertical_car_list = arcade.SpriteList()
@@ -79,11 +84,30 @@ class Game(arcade.Window):
     def on_update(self, dt):
         self.dt = dt
         self.hero_physics_engine.update()
-        self.horizontal_car_list.update(dt)
-        self.vertical_car_list.update(dt)
         self.make_car()
         self.check_collisions()
+        self.check_timers()
+        self.horizontal_car_list.update(dt)
+        self.vertical_car_list.update(dt)
+        self.death()
 
+    def check_timers(self):
+        for i, car in enumerate(self.horizontal_car_list):
+             if car.have_timer == False:
+                car.timer_limit = min(25, self.start_timer_limit + i * 2)
+                car.have_timer = True
+        for i, car in enumerate(self.vertical_car_list):
+            if car.have_timer == False:
+                car.timer_limit = min(25, self.start_timer_limit + i * 2)
+                car.have_timer = True
+
+        for car in self.horizontal_car_list:
+            if car.drive == False and car.timer_start == False:
+                car.timer()
+        for car in self.vertical_car_list:
+            if car.drive == False and car.timer_start == False:
+                car.timer()
+        
     
     def check_collisions(self):
             #  Проверки горизонтальной линии
@@ -167,7 +191,7 @@ class Game(arcade.Window):
             if self.make_car_end_time - self.make_car_start_time >= self.make_car_interval:
                 self.make_car_interval = random.uniform(self.interval0, self.interval1)
                 self.make_car_start_time = time.time()
-                self.place = 0#random.choice([0, 1])
+                self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
                     car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place)
                     self.horizontal_car_list.append(car)
@@ -177,9 +201,9 @@ class Game(arcade.Window):
         else:
             self.add_car_time = time.time()
             if self.add_car_time - self.start_game_time >= self.start_game_interval:
-                self.place = 0#random.choice([0, 1])
+                self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
-                    car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place)
+                    car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place,)
                     self.horizontal_car_list.append(car)
                 else: #  вертикаль
                     car = Car(self.game_width // 2 + random.randint(-20, 20), screen_height + 60, self.place)
@@ -187,6 +211,10 @@ class Game(arcade.Window):
                 self.start_game_flag = True
                 self.make_car_start_time = time.time()
                 self.make_car_interval = random.uniform(self.interval0, self.interval1)
+    
+    def death(self):
+        if self.hero.health == 0:
+            exit()
 
                 
 

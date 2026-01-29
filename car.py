@@ -1,6 +1,6 @@
 import arcade
 import random
-
+import time
 
 screen_width = 1600
 screen_height= 900
@@ -16,6 +16,10 @@ class Car(arcade.Sprite):
         # Основные характеристики
         self.speed = random.randint(40, 55)
         self.drive = True
+        self.timer_start = False
+        self.have_timer = False
+        self.drive_nonstop = False
+        self.timer_limit = 0
         
         # Загрузка текстур
         if self.place == 0:
@@ -26,14 +30,25 @@ class Car(arcade.Sprite):
         
         
     def update(self, dt):
-        """ Перемещение машины """
         if self.drive == True:
             if self.place == 0:
                 self.center_x += self.speed  * dt
             else:
                 self.center_y -= self.speed * dt
-        
-        # Ограничение в пределах экрана
-        # self.center_x = max(self.width/2, min(screen_width - self.width/2, self.center_x))
-        # self.center_y = max(self.height/2, min(screen_height - self.height/2, self.center_y))
+        self.timer()
+
+    def timer(self):
+        if self.timer_start == False:
+            self.timer_start = True
+            self.countdown_start = time.time()
+        if self.drive == False:
+            self.countdown_end = time.time()
+            if self.countdown_end - self.countdown_start >= self.timer_limit:
+                self.drive_nonstop == True
+                self.timer_limit = 0
+        else:
+            self.timer_limit -= self.countdown_end - self.countdown_start
+            self.timer_start = False
+            self.countdown_start = 0
+            self.countdown_end = 0
         
