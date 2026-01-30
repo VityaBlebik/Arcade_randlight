@@ -17,7 +17,7 @@ secreen_title = "Простая отрисовка изображения"
 
 class Game(arcade.Window):
     def __init__(self, width, height, title,):
-        super().__init__(width, height, title, fullscreen=True)
+        super().__init__(width, height, title, fullscreen=False)
         self.game_width = width
         self.game_height = height
         self.texture = arcade.load_texture("images/background.png")
@@ -75,11 +75,11 @@ class Game(arcade.Window):
         self.clear()
         arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(self.width // 2, self.height // 2, self.game_width, self.game_height))
         self.hero_list.draw()
+        self.light_manager.draw()
         self.horizontal_car_list.draw()
         self.vertical_car_list.draw()
         self.horizontal_light_list.draw()
         self.vertical_light_list.draw()
-        self.light_manager.draw()
         arcade.draw_rect_filled(arcade.rect.XYWH(175, screen_height // 2, 350, 900), arcade.color.BLACK)
         arcade.draw_rect_filled(arcade.rect.XYWH(screen_width - 175, screen_height // 2, 350, 900), arcade.color.BLACK)
         for car in self.horizontal_car_list:
@@ -124,29 +124,42 @@ class Game(arcade.Window):
                 if car.center_x > self.game_width - 350 + car.width:
                     car.remove_from_sprite_lists()
 
-            if self.horizontal_light.status == -1:
-                drive_horizontal_light = False
-            else:
-                drive_horizontal_light = True
-            self.stop_cars_by_horizontal_light = arcade.check_for_collision_with_list(self.horizontal_light, self.horizontal_car_list)
-            for stop_car_by_horizontal_light in self.stop_cars_by_horizontal_light:
-                    stop_car_by_horizontal_light.drive = drive_horizontal_light
-                    if stop_car_by_horizontal_light.center_x + stop_car_by_horizontal_light.width // 2 > self.horizontal_light.center_x - self.horizontal_light.width // 2 + 5:
-                        stop_car_by_horizontal_light.drive = True
-            
             for car in range(len(self.horizontal_car_list) - 1): #  тут обратный список, потому что машины добавляются справа налево в self.horizontal_car_list
                 car1 = self.horizontal_car_list[car + 1]
                 car2 = self.horizontal_car_list[car]
                 if arcade.check_for_collision(car1, car2):  
                     car1.drive = False
-                elif not arcade.check_for_collision(car1, car2) and car2.center_x - car2.width // 2 - car1.center_x + car1.width // 2 >= 10 and drive_horizontal_light == True:
+                    #and car2.center_x - car2.width // 2 - car1.center_x + car1.width // 2 >= 10
+                elif car2.center_x - car2.width // 2 - car1.center_x + car1.width // 2 >= 20:
+                # elif not arcade.check_for_collision(car1, car2): #КОРОЧЕ ЕСЛИ ДАЖЕ МАШИНА ДАЛЕКО ВПЕРЕДИ, ТО ЕСЛИ СВЕТОФОР ВЫКЛЮЧЕН ИЗ-ЗА TRUE ТУТ СТОПАЕТСЯ МАШИНА
                     car1.drive = True
+
+            if self.horizontal_light.status == -1:
+                drive_horizontal_light = False
+            else:
+                drive_horizontal_light = True
+            self.stop_cars_by_horizontal_light = arcade.check_for_collision_with_list(self.horizontal_light, self.horizontal_car_list)
+            print(len(self.stop_cars_by_horizontal_light))
+            for stop_car_by_horizontal_light in self.stop_cars_by_horizontal_light:
+                    stop_car_by_horizontal_light.drive = drive_horizontal_light 
+                    if stop_car_by_horizontal_light.center_x + stop_car_by_horizontal_light.width // 2 > self.horizontal_light.center_x:
+                        stop_car_by_horizontal_light.drive = True
+                        
+
 
             #  Проверки вертикальной линии
 
             for car in self.vertical_car_list:
-                if car.center_y < - car.width - 10:
+                if car.center_y < - car.width:
                     car.remove_from_sprite_lists()
+
+            for car in range(len(self.vertical_car_list) - 1): #  тут обратный список, потому что машины добавляются снизу вверх в self.vertical_car_list
+                car1 = self.vertical_car_list[car + 1]
+                car2 = self.vertical_car_list[car]
+                if arcade.check_for_collision(car1, car2):  
+                    car1.drive = False
+                elif car1.center_y - car1.height // 2 - car2.center_y + car2.height // 2 >= 10:
+                    car1.drive = True
 
             if self.vertical_light.status == -1:
                 drive_vertical_light = False
@@ -155,16 +168,9 @@ class Game(arcade.Window):
             self.stop_cars_by_vertical_light = arcade.check_for_collision_with_list(self.vertical_light, self.vertical_car_list)
             for stop_car_by_vertical_light in self.stop_cars_by_vertical_light:
                     stop_car_by_vertical_light.drive = drive_vertical_light
-                    if stop_car_by_vertical_light.center_y - stop_car_by_vertical_light.height // 2 < self.vertical_light.center_y + self.vertical_light.height // 2 - 5:
+                    if stop_car_by_vertical_light.center_y - stop_car_by_vertical_light.height // 2 < self.vertical_light.center_y:
                         stop_car_by_vertical_light.drive = True
             
-            for car in range(len(self.vertical_car_list) - 1): #  тут обратный список, потому что машины добавляются снизу вверх в self.vertical_car_list
-                car1 = self.vertical_car_list[car + 1]
-                car2 = self.vertical_car_list[car]
-                if arcade.check_for_collision(car1, car2):  
-                    car1.drive = False
-                elif not arcade.check_for_collision(car1, car2) and car1.center_y - car1.height // 2 - car2.center_y + car2.height // 2 >= 10 and drive_vertical_light == True:
-                    car1.drive = True
 
             if arcade.check_for_collision_with_lists(self.hero, [self.horizontal_car_list, self.vertical_car_list]):
                 self.hero.get_damage()

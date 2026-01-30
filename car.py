@@ -14,7 +14,7 @@ class Car(arcade.Sprite):
         self.center_y = start_y
         self.place = place
         # Основные характеристики
-        self.speed = random.randint(40, 55)
+        self.speed = random.randint(55, 70)
         self.drive = True
         self.timer_start = False
         self.have_timer = False
