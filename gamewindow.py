@@ -22,13 +22,16 @@ class Game(arcade.Window):
         self.game_height = height
         self.texture = arcade.load_texture("images/background.png")
         db.start()
+        self.pause = False
         self.setup()
 
     def setup(self):
+        self.a = 1
         self.batch = Batch()
         self.start_timer_limit = 10
-        self.interval0 = 3
-        self.interval1 = 5
+        self.interval0 = 2
+        self.interval1 = 3
+        self.difficulty_speed = 0
 
         self.hero_list = arcade.SpriteList()
         self.horizontal_car_list = arcade.SpriteList()
@@ -88,14 +91,16 @@ class Game(arcade.Window):
             car.countdown.draw()
     
     def on_update(self, dt):
-        self.dt = dt
-        self.hero_physics_engine.update()
-        self.make_car()
-        self.check_collisions()
-        self.check_timers()
-        self.horizontal_car_list.update(dt)
-        self.vertical_car_list.update(dt)
-        self.death()
+        if not self.pause:
+            self.dt = dt
+            self.hero_physics_engine.update()
+            self.make_car()
+            self.check_collisions()
+            self.check_timers()
+            self.horizontal_car_list.update(dt)
+            self.vertical_car_list.update(dt)
+            self.death()
+            self.difficulty_grow()
 
     def check_timers(self):
         for i, car in enumerate(self.horizontal_car_list):
@@ -114,10 +119,6 @@ class Game(arcade.Window):
             if car.drive == False and car.timer_start == False:
                 car.timer()
 
-        
-
-        
-    
     def check_collisions(self):
             #  Проверки горизонтальной линии
             for car in self.horizontal_car_list:
@@ -139,13 +140,10 @@ class Game(arcade.Window):
             else:
                 drive_horizontal_light = True
             self.stop_cars_by_horizontal_light = arcade.check_for_collision_with_list(self.horizontal_light, self.horizontal_car_list)
-            print(len(self.stop_cars_by_horizontal_light))
             for stop_car_by_horizontal_light in self.stop_cars_by_horizontal_light:
                     stop_car_by_horizontal_light.drive = drive_horizontal_light 
                     if stop_car_by_horizontal_light.center_x + stop_car_by_horizontal_light.width // 2 > self.horizontal_light.center_x:
                         stop_car_by_horizontal_light.drive = True
-                        
-
 
             #  Проверки вертикальной линии
 
@@ -192,7 +190,9 @@ class Game(arcade.Window):
         elif key == arcade.key.A:
             self.hero.change_x = -self.hero.speed * self.dt
         elif key == arcade.key.D:
-           self.hero.change_x = self.hero.speed * self.dt
+            self.hero.change_x = self.hero.speed * self.dt
+        if key == arcade.key.ESCAPE:
+            self.put_pause()
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W or key == arcade.key.S:
@@ -208,10 +208,10 @@ class Game(arcade.Window):
                 self.make_car_start_time = time.time()
                 self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
-                    car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place)
+                    car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place, self.difficulty_speed)
                     self.horizontal_car_list.append(car)
                 else: #  вертикаль
-                    car = Car(800 + random.randint(-20, 20), screen_height + 60, self.place)
+                    car = Car(800 + random.randint(-20, 20), screen_height + 60, self.place, self.difficulty_speed)
                     self.vertical_car_list.append(car)
         else:
             self.add_car_time = time.time()
@@ -230,6 +230,18 @@ class Game(arcade.Window):
     def death(self):
         if self.hero.health == 0:
             exit()
+
+    def difficulty_grow(self):
+        if time.time() - self.start_game_time >= 1500:
+            self.start_timer_limit = 7
+            self.interval0 = 1
+            self.interval1 = 2
+            self.difficulty_speed = 20
+    
+    def put_pause(self):
+        self.a *= -1
+        if self.a == -1:
+            self.pause = True
 
                 
 
