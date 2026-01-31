@@ -7,14 +7,13 @@ screen_height= 900
 
 
 class Car(arcade.Sprite):
-    def __init__(self, start_x, start_y, place):
+    def __init__(self, start_x, start_y, place, difficulty_speed=0):
         super().__init__()
 
         self.center_x = start_x
         self.center_y = start_y
         self.place = place
-        # Основные характеристики
-        self.speed = random.randint(55, 70)
+        self.speed = random.randint(55, 70) +  difficulty_speed
         self.drive = True
         self.timer_start = False
         self.have_timer = False
@@ -22,7 +21,6 @@ class Car(arcade.Sprite):
         self.timer_limit = 0
         self.countdown_text = self.timer_limit
         self.countdown = arcade.Text(text="", x=1, y=1)
-        # Загрузка текстур
         if self.place == 0:
             self.texture = arcade.load_texture("images/carh.png")
         else:

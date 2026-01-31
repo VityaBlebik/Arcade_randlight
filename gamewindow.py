@@ -26,11 +26,12 @@ class Game(arcade.Window):
         self.setup()
 
     def setup(self):
-        self.a = 1
+        self.pause_time = 0
+        self.paused = False
         self.batch = Batch()
         self.start_timer_limit = 10
-        self.interval0 = 2
-        self.interval1 = 3
+        self.interval0 = 5
+        self.interval1 = 7
         self.difficulty_speed = 0
 
         self.hero_list = arcade.SpriteList()
@@ -72,6 +73,11 @@ class Game(arcade.Window):
         self.vertical_light_button =  UITextureButton(x=self.game_width // 2 - 50, y=self.game_height // 2 + 49, width=100, height=21, texture=self.vertical_light_texture)
         self.vertical_light_button.on_click = self.vertical_light.change_status
         self.light_manager.add(self.vertical_light_button)
+
+        self.game_camera = arcade.camera.Camera2D()  # Камера для игрового мира
+        self.gui_camera = arcade.camera.Camera2D()  # Камера для объектов интерфейса
+        self.game_camera.zoom = 2.0
+
         
         
     def on_draw(self):
@@ -89,9 +95,12 @@ class Game(arcade.Window):
             car.countdown.draw()
         for car in self.vertical_car_list:
             car.countdown.draw()
+        self.game_camera.use()
+        if self.paused == True:
+             arcade.draw_rect_filled(arcade.rect.XYWH(screen_width // 2, screen_height // 2, 700, 800), (68, 202, 100, 158))
     
     def on_update(self, dt):
-        if not self.pause:
+        if not self.paused:
             self.dt = dt
             self.hero_physics_engine.update()
             self.make_car()
@@ -100,7 +109,7 @@ class Game(arcade.Window):
             self.horizontal_car_list.update(dt)
             self.vertical_car_list.update(dt)
             self.death()
-            self.difficulty_grow()
+        self.difficulty_grow()
 
     def check_timers(self):
         for i, car in enumerate(self.horizontal_car_list):
@@ -192,13 +201,26 @@ class Game(arcade.Window):
         elif key == arcade.key.D:
             self.hero.change_x = self.hero.speed * self.dt
         if key == arcade.key.ESCAPE:
-            self.put_pause()
+            self.paused = not self.paused
+        if key == arcade.key.Z:
+            self.game_camera.zoom = 1.0
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W or key == arcade.key.S:
             self.hero.change_y = 0
         elif key == arcade.key.A or key == arcade.key.D:
             self.hero.change_x = 0
+        if key == arcade.key.Z:
+            self.game_camera.zoom = 2.0
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if button == arcade.MOUSE_BUTTON_RIGHT:
+            self.game_camera.zoom = 1.0
+    
+    def on_mouse_release(self, x, y, button, modifiers):
+        if button == arcade.MOUSE_BUTTON_RIGHT:
+            self.game_camera.zoom = 2.0
+
     
     def make_car(self):
         if self.start_game_flag:
@@ -228,20 +250,23 @@ class Game(arcade.Window):
                 self.make_car_interval = random.uniform(self.interval0, self.interval1)
     
     def death(self):
-        if self.hero.health == 0:
+        if self.hero.health == 4:
             exit()
 
     def difficulty_grow(self):
-        if time.time() - self.start_game_time >= 1500:
-            self.start_timer_limit = 7
-            self.interval0 = 1
-            self.interval1 = 2
-            self.difficulty_speed = 20
+        if not self.paused:
+            print(time.time() - self.start_game_time - (time.time() - self.pause_time))
+            if time.time() * 2  - self.start_game_time  - self.pause_time >= 90:
+                self.start_timer_limit = 7
+                self.interval0 = 3
+                self.interval1 = 4
+                self.difficulty_speed = 15
+            # elif
+        else:
+            if self.pause_time == 0:
+                self.pause_time = time.time()
     
-    def put_pause(self):
-        self.a *= -1
-        if self.a == -1:
-            self.pause = True
+
 
                 
 
