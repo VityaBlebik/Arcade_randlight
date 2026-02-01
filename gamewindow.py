@@ -26,6 +26,7 @@ class Game(arcade.Window):
         self.setup()
 
     def setup(self):
+        self.all_pause_time = 0
         self.pause_time = 0
         self.paused = False
         self.batch = Batch()
@@ -82,9 +83,9 @@ class Game(arcade.Window):
         
     def on_draw(self):
         self.clear()
+        self.game_camera.use()
         arcade.draw_texture_rect(self.texture, arcade.rect.XYWH(self.width // 2, self.height // 2, self.game_width, self.game_height))
         self.hero_list.draw()
-        self.light_manager.draw()
         self.horizontal_car_list.draw()
         self.vertical_car_list.draw()
         self.horizontal_light_list.draw()
@@ -95,9 +96,11 @@ class Game(arcade.Window):
             car.countdown.draw()
         for car in self.vertical_car_list:
             car.countdown.draw()
-        self.game_camera.use()
+        self.gui_camera.use()
+        self.light_manager.draw()
         if self.paused == True:
              arcade.draw_rect_filled(arcade.rect.XYWH(screen_width // 2, screen_height // 2, 700, 800), (68, 202, 100, 158))
+        
     
     def on_update(self, dt):
         if not self.paused:
@@ -201,7 +204,7 @@ class Game(arcade.Window):
         elif key == arcade.key.D:
             self.hero.change_x = self.hero.speed * self.dt
         if key == arcade.key.ESCAPE:
-            self.paused = not self.paused
+            self.change_pause()
         if key == arcade.key.Z:
             self.game_camera.zoom = 1.0
 
@@ -255,19 +258,21 @@ class Game(arcade.Window):
 
     def difficulty_grow(self):
         if not self.paused:
-            print(time.time() - self.start_game_time - (time.time() - self.pause_time))
-            if time.time() * 2  - self.start_game_time  - self.pause_time >= 90:
+            if time.time() - self.start_game_time - self.all_pause_time >= 90:
                 self.start_timer_limit = 7
                 self.interval0 = 3
                 self.interval1 = 4
                 self.difficulty_speed = 15
             # elif
-        else:
-            if self.pause_time == 0:
-                self.pause_time = time.time()
+
     
-
-
+    def change_pause(self):
+        if not self.paused:
+            self.paused = True
+            self.pause_time = time.time()
+        else:
+            self.paused = False
+            self.all_pause_time += time.time() - self.pause_time
                 
 
     
