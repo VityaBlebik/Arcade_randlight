@@ -7,13 +7,13 @@ screen_height= 900
 
 
 class Car(arcade.Sprite):
-    def __init__(self, start_x, start_y, place, difficulty_speed=0):
+    def __init__(self, start_x, start_y, place, speed0, speed1, difficulty_speed=0):
         super().__init__()
 
         self.center_x = start_x
         self.center_y = start_y
         self.place = place
-        self.speed = random.randint(55, 70) +  difficulty_speed
+        self.speed = random.randint(speed0, speed1) +  difficulty_speed
         self.drive = True
         self.timer_start = False
         self.have_timer = False

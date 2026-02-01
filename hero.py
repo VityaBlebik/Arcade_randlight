@@ -3,11 +3,12 @@ import time
 
 
 class Hero(arcade.Sprite):
-    def __init__(self, start_x, start_y):
+    def __init__(self, start_x, start_y, speed, health, no_damage_time):
         super().__init__()
         
-        self.speed = 40
-        self.health = 3
+        self.no_damage_time = no_damage_time
+        self.speed = speed
+        self.health = health
         self.damage_no = True
         self.texture = arcade.load_texture("images/hero2.png")
         self.center_x = start_x
