@@ -66,21 +66,19 @@ class Game(arcade.Window):
         self.light_manager.enable()
 
         self.horizantal_light_texture = arcade.load_texture("images/light_h.png")
-        self.horizontal_light_button = UITextureButton(x=self.game_width // 2 - 71, y=self.game_height // 2 - 50, width=21, height=100, texture=self.horizantal_light_texture)
+        self.horizontal_light_button = UITextureButton(x=self.game_width // 2 - 142, y=self.game_height // 2 - 100, width=42, height=200) 
         self.horizontal_light_button.on_click = self.horizontal_light.change_status
         self.light_manager.add(self.horizontal_light_button)
         
         self.vertical_light_texture = arcade.load_texture("images/light_v.png")
-        self.vertical_light_button =  UITextureButton(x=self.game_width // 2 - 50, y=self.game_height // 2 + 49, width=100, height=21, texture=self.vertical_light_texture)
+        self.vertical_light_button =  UITextureButton(x=self.game_width // 2 - 100, y=self.game_height // 2 + 98, width=200, height=42)
         self.vertical_light_button.on_click = self.vertical_light.change_status
         self.light_manager.add(self.vertical_light_button)
-
+            
         self.game_camera = arcade.camera.Camera2D()  # Камера для игрового мира
         self.gui_camera = arcade.camera.Camera2D()  # Камера для объектов интерфейса
-        self.game_camera.zoom = 2.0
-
-        
-        
+        self.game_camera.zoom = 2.0   
+         
     def on_draw(self):
         self.clear()
         self.game_camera.use()
@@ -99,9 +97,8 @@ class Game(arcade.Window):
         self.gui_camera.use()
         self.light_manager.draw()
         if self.paused == True:
-             arcade.draw_rect_filled(arcade.rect.XYWH(screen_width // 2, screen_height // 2, 700, 800), (68, 202, 100, 158))
+             arcade.draw_rect_filled(arcade.rect.XYWH(screen_width // 2, screen_height // 2, 800, 800), (68, 202, 100, 158))
         
-    
     def on_update(self, dt):
         if not self.paused:
             self.dt = dt
@@ -180,8 +177,7 @@ class Game(arcade.Window):
                     stop_car_by_vertical_light.drive = drive_vertical_light
                     if stop_car_by_vertical_light.center_y - stop_car_by_vertical_light.height // 2 < self.vertical_light.center_y:
                         stop_car_by_vertical_light.drive = True
-            
-
+        
             if arcade.check_for_collision_with_lists(self.hero, [self.horizontal_car_list, self.vertical_car_list]):
                 self.hero.get_damage()
 
@@ -206,7 +202,7 @@ class Game(arcade.Window):
         if key == arcade.key.ESCAPE:
             self.change_pause()
         if key == arcade.key.Z:
-            self.game_camera.zoom = 1.0
+            self.zooming()
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.W or key == arcade.key.S:
@@ -214,16 +210,37 @@ class Game(arcade.Window):
         elif key == arcade.key.A or key == arcade.key.D:
             self.hero.change_x = 0
         if key == arcade.key.Z:
-            self.game_camera.zoom = 2.0
+            self.zooming()
 
     def on_mouse_press(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_RIGHT:
-            self.game_camera.zoom = 1.0
+            self.zooming()
     
     def on_mouse_release(self, x, y, button, modifiers):
         if button == arcade.MOUSE_BUTTON_RIGHT:
-            self.game_camera.zoom = 2.0
+            self.zooming()
 
+    def zooming(self):
+        if self.game_camera.zoom == 1.0:
+            self.game_camera.zoom = 2.0
+            self.light_manager.remove(self.horizontal_light_button)
+            self.light_manager.remove(self.vertical_light_button)
+            self.horizontal_light_button = UITextureButton(x=self.game_width // 2 - 142, y=self.game_height // 2 - 100, width=42, height=200) 
+            self.horizontal_light_button.on_click = self.horizontal_light.change_status
+            self.vertical_light_button =  UITextureButton(x=self.game_width // 2 - 100, y=self.game_height // 2 + 98, width=200, height=42, texture=self.vertical_light_texture)
+            self.vertical_light_button.on_click = self.vertical_light.change_status
+            self.light_manager.add(self.vertical_light_button)
+            self.light_manager.add(self.horizontal_light_button)
+        else:
+            self.game_camera.zoom = 1.0
+            self.light_manager.remove(self.horizontal_light_button)
+            self.light_manager.remove(self.vertical_light_button)
+            self.horizontal_light_button = UITextureButton(x=self.game_width // 2 - 71, y=self.game_height // 2 - 50, width=21, height=100) 
+            self.horizontal_light_button.on_click = self.horizontal_light.change_status
+            self.vertical_light_button =  UITextureButton(x=self.game_width // 2 - 50, y=self.game_height // 2 + 49, width=100, height=21, texture=self.vertical_light_texture)
+            self.vertical_light_button.on_click = self.vertical_light.change_status
+            self.light_manager.add(self.vertical_light_button)
+            self.light_manager.add(self.horizontal_light_button)
     
     def make_car(self):
         if self.start_game_flag:
