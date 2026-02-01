@@ -65,6 +65,14 @@ class Game(arcade.Window):
         self.light_manager = UIManager()
         self.light_manager.enable()
 
+        self.pause_manager = UIManager()
+        self.pause_manager.enable()
+
+        self.continue_texture = arcade.load_texture("images/button.png")
+        self.continue_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 + 100, widht=500, height=100, texture=self.continue_texture) 
+        self.continue_button.on_click = self.change_pause
+        self.pause_manager.add(self.continue_button)
+
         self.horizantal_light_texture = arcade.load_texture("images/light_h.png")
         self.horizontal_light_button = UITextureButton(x=self.game_width // 2 - 142, y=self.game_height // 2 - 100, width=42, height=200) 
         self.horizontal_light_button.on_click = self.horizontal_light.change_status
@@ -88,16 +96,20 @@ class Game(arcade.Window):
         self.vertical_car_list.draw()
         self.horizontal_light_list.draw()
         self.vertical_light_list.draw()
-        arcade.draw_rect_filled(arcade.rect.XYWH(175, screen_height // 2, 350, 900), arcade.color.BLACK)
-        arcade.draw_rect_filled(arcade.rect.XYWH(screen_width - 175, screen_height // 2, 350, 900), arcade.color.BLACK)
+        arcade.draw_rect_filled(arcade.rect.XYWH(175, self.game_height // 2, 350, 900), arcade.color.BLACK)
+        arcade.draw_rect_filled(arcade.rect.XYWH(self.game_width - 175, self.game_height // 2, 350, 900), arcade.color.BLACK)
         for car in self.horizontal_car_list:
             car.countdown.draw()
         for car in self.vertical_car_list:
             car.countdown.draw()
         self.gui_camera.use()
-        self.light_manager.draw()
         if self.paused == True:
-             arcade.draw_rect_filled(arcade.rect.XYWH(screen_width // 2, screen_height // 2, 800, 800), (68, 202, 100, 158))
+            arcade.draw_rect_filled(arcade.rect.XYWH(self.game_width // 2, self.game_height // 2, 800, 800), (68, 202, 100, 158))
+            self.pause_manager.enable()
+            self.pause_manager.draw()
+        else:
+            self.pause_manager.disable()
+             
         
     def on_update(self, dt):
         if not self.paused:
@@ -223,8 +235,7 @@ class Game(arcade.Window):
     def zooming(self):
         if self.game_camera.zoom == 1.0:
             self.game_camera.zoom = 2.0
-            self.light_manager.remove(self.horizontal_light_button)
-            self.light_manager.remove(self.vertical_light_button)
+            self.light_manager.clear()
             self.horizontal_light_button = UITextureButton(x=self.game_width // 2 - 142, y=self.game_height // 2 - 100, width=42, height=200) 
             self.horizontal_light_button.on_click = self.horizontal_light.change_status
             self.vertical_light_button =  UITextureButton(x=self.game_width // 2 - 100, y=self.game_height // 2 + 98, width=200, height=42, texture=self.vertical_light_texture)
@@ -233,8 +244,7 @@ class Game(arcade.Window):
             self.light_manager.add(self.horizontal_light_button)
         else:
             self.game_camera.zoom = 1.0
-            self.light_manager.remove(self.horizontal_light_button)
-            self.light_manager.remove(self.vertical_light_button)
+            self.light_manager.clear()
             self.horizontal_light_button = UITextureButton(x=self.game_width // 2 - 71, y=self.game_height // 2 - 50, width=21, height=100) 
             self.horizontal_light_button.on_click = self.horizontal_light.change_status
             self.vertical_light_button =  UITextureButton(x=self.game_width // 2 - 50, y=self.game_height // 2 + 49, width=100, height=21, texture=self.vertical_light_texture)
@@ -283,7 +293,7 @@ class Game(arcade.Window):
             # elif
 
     
-    def change_pause(self):
+    def change_pause(self, event=None):
         if not self.paused:
             self.paused = True
             self.pause_time = time.time()
@@ -291,8 +301,6 @@ class Game(arcade.Window):
             self.paused = False
             self.all_pause_time += time.time() - self.pause_time
                 
-
-    
 if __name__ == "__main__":
     game = Game(screen_width, screen_height, secreen_title)
     arcade.run()

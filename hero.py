@@ -9,7 +9,7 @@ class Hero(arcade.Sprite):
         self.speed = 40
         self.health = 3
         self.damage_no = True
-        self.texture = arcade.load_texture("images/hero.png")
+        self.texture = arcade.load_texture("images/hero2.png")
         self.center_x = start_x
         self.center_y = start_y
         
