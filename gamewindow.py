@@ -15,9 +15,9 @@ screen_height= 900
 secreen_title = "Простая отрисовка изображения"
 
 
-class Game(arcade.Window):
-    def __init__(self, width, height, title,):
-        super().__init__(width, height, title, fullscreen=False)
+class Game_View(arcade.View):
+    def __init__(self, width, height):
+        super().__init__()
         self.game_width = width
         self.game_height = height
         self.texture = arcade.load_texture("images/background.png")
@@ -69,8 +69,13 @@ class Game(arcade.Window):
         self.pause_manager.enable()
 
         self.continue_texture = arcade.load_texture("images/button.png")
-        self.continue_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 + 100, widht=500, height=100, texture=self.continue_texture) 
+        self.continue_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 + 100, widht=500, height=100, texture=self.continue_texture, text="ПРОДОЛЖИТЬ")
         self.continue_button.on_click = self.change_pause
+        self.pause_manager.add(self.continue_button)
+
+        self.exit_texture = arcade.load_texture("images/button.png")
+        self.exit_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 - 100, widht=500, height=100, texture=self.continue_texture, text="ПРОДОЛЖИТЬ")
+        self.exit_button.on_click = arcade.close_window
         self.pause_manager.add(self.continue_button)
 
         self.horizantal_light_texture = arcade.load_texture("images/light_h.png")
@@ -105,6 +110,7 @@ class Game(arcade.Window):
         self.gui_camera.use()
         if self.paused == True:
             arcade.draw_rect_filled(arcade.rect.XYWH(self.game_width // 2, self.game_height // 2, 800, 800), (68, 202, 100, 158))
+            arcade.draw_text(text="ПАУЗА", x=self.game_width // 2, y=self.game_height - 150, color=arcade.color.WHITE, width=400, font_size=90, anchor_x="center", anchor_y="center")
             self.pause_manager.enable()
             self.pause_manager.draw()
         else:
@@ -302,5 +308,6 @@ class Game(arcade.Window):
             self.all_pause_time += time.time() - self.pause_time
                 
 if __name__ == "__main__":
-    game = Game(screen_width, screen_height, secreen_title)
+    window = arcade.Window(1600, 900, "Игра", fullscreen=False)
+    window.show_view(Game_View(1600, 900))
     arcade.run()
