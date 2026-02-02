@@ -10,6 +10,7 @@ from hero import Hero
 from car import Car
 from light import Light
 
+
 screen_width = 1600
 screen_height= 900
 secreen_title = "Простая отрисовка изображения"
@@ -34,12 +35,19 @@ class Game_View(arcade.View):
         self.interval0 = 5
         self.interval1 = 7
         self.difficulty_speed = 0
+        self.health = 3
+        self.hero_speed = 20
+        self.no_damage_time = 5
+        self.car_speed0 = 40
+        self.car_speed1 = 55
+
+        self.dead = False
 
         self.hero_list = arcade.SpriteList()
         self.horizontal_car_list = arcade.SpriteList()
         self.vertical_car_list = arcade.SpriteList()
 
-        self.hero = Hero(self.game_width // 2, self.game_height // 2)  
+        self.hero = Hero(self.game_width // 2, self.game_height // 2, self.hero_speed, self.health, self.no_damage_time)  
         self.hero_list.append(self.hero)
 
         self.start_game_time = time.time()
@@ -74,9 +82,9 @@ class Game_View(arcade.View):
         self.pause_manager.add(self.continue_button)
 
         self.exit_texture = arcade.load_texture("images/button.png")
-        self.exit_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 - 100, widht=500, height=100, texture=self.continue_texture, text="ПРОДОЛЖИТЬ")
-        self.exit_button.on_click = arcade.close_window
-        self.pause_manager.add(self.continue_button)
+        self.exit_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 - 100, widht=500, height=100, texture=self.exit_texture, text="ВЫЙТИ")
+        self.exit_button.on_click = self.exit_to_menu
+        self.pause_manager.add(self.exit_button)
 
         self.horizantal_light_texture = arcade.load_texture("images/light_h.png")
         self.horizontal_light_button = UITextureButton(x=self.game_width // 2 - 142, y=self.game_height // 2 - 100, width=42, height=200) 
@@ -121,6 +129,8 @@ class Game_View(arcade.View):
         if not self.paused:
             self.dt = dt
             self.hero_physics_engine.update()
+            self.hero.update(dt)
+            self.hero.update_animation(dt)
             self.make_car()
             self.check_collisions()
             self.check_timers()
@@ -266,28 +276,32 @@ class Game_View(arcade.View):
                 self.make_car_start_time = time.time()
                 self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
-                    car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place, self.difficulty_speed)
+                    car = Car(self.game_width - 60, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
                     self.horizontal_car_list.append(car)
                 else: #  вертикаль
-                    car = Car(800 + random.randint(-20, 20), screen_height + 60, self.place, self.difficulty_speed)
+                    car = Car(self.game_width // 2 + random.randint(-20, 20), self.game_height + 60, self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
                     self.vertical_car_list.append(car)
         else:
             self.add_car_time = time.time()
             if self.add_car_time - self.start_game_time >= self.start_game_interval:
                 self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
-                    car = Car(290, screen_height // 2 + random.randint(-20, 20), self.place,)
+                    car = Car(self.game_width - 60, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
                     self.horizontal_car_list.append(car)
                 else: #  вертикаль
-                    car = Car(self.game_width // 2 + random.randint(-20, 20), screen_height + 60, self.place)
+                    car = Car(self.game_width // 2 + random.randint(-20, 20), self.game_height + 60, self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
                     self.vertical_car_list.append(car)
                 self.start_game_flag = True
                 self.make_car_start_time = time.time()
                 self.make_car_interval = random.uniform(self.interval0, self.interval1)
     
+    def on_hide_view(self):
+        pass
+    #  ну тут типа музыку стопать
+
     def death(self):
         if self.hero.health == 4:
-            exit()
+            self.dead = True
 
     def difficulty_grow(self):
         if not self.paused:
@@ -306,6 +320,10 @@ class Game_View(arcade.View):
         else:
             self.paused = False
             self.all_pause_time += time.time() - self.pause_time
+    
+    def exit_to_menu(self, event=None):
+        from menuwindow import Menu_View
+        self.window.show_view(Menu_View(1600, 900))
                 
 if __name__ == "__main__":
     window = arcade.Window(1600, 900, "Игра", fullscreen=False)

@@ -48,7 +48,7 @@ class Car(arcade.Sprite):
         if self.drive == False:
             self.countdown_end = time.time()
             self.countdown_text = int(self.timer_limit - (self.countdown_end - self.countdown_start))
-            self.countdown = arcade.Text(text=f"{ self.countdown_text}", x=self.center_x, y=self.center_y + 15, color=arcade.color.DIAMOND, font_size=20, font_name="Arial", anchor_x="center", anchor_y="center")
+            self.countdown = arcade.Text(text=f"{self.countdown_text}", x=self.center_x, y=self.center_y + 15, color=arcade.color.DIAMOND, font_size=20, font_name="Arial", anchor_x="center", anchor_y="center")
             # print(self.countdown_text, self.timer_limit, end="")
             if self.countdown_end - self.countdown_start >= self.timer_limit:
                 self.drive_nonstop = True
