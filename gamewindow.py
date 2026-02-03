@@ -30,17 +30,17 @@ class Game_View(arcade.View):
         self.all_pause_time = 0
         self.pause_time = 0
         self.paused = False
-        self.batch = Batch()
         self.start_timer_limit = 10
-        self.interval0 = 5
-        self.interval1 = 7
+        self.interval0 = 1
+        self.interval1 = 3
         self.difficulty_speed = 0
         self.health = 3
         self.hero_speed = 20
         self.no_damage_time = 5
-        self.car_speed0 = 40
-        self.car_speed1 = 55
+        self.car_speed0 = 50
+        self.car_speed1 = 65
 
+        self.batch = Batch()
         self.dead = False
 
         self.hero_list = arcade.SpriteList()
@@ -76,13 +76,26 @@ class Game_View(arcade.View):
         self.pause_manager = UIManager()
         self.pause_manager.enable()
 
+        self.death_manager = UIManager()
+        self.death_manager.enable()
+
+        self.restart_texture = arcade.load_texture("images/button.png")
+        self.restart_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 + 100, widht=500, height=100, texture=self.restart_texture, text="Заново")
+        self.restart_button.on_click = self.restart
+        self.death_manager.add(self.restart_button)
+
+        self.exit_texture = arcade.load_texture("images/button.png")
+        self.exit_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 - 100, widht=500, height=100, texture=self.exit_texture, text="Выйти")
+        self.exit_button.on_click = self.exit_to_menu
+        self.death_manager.add(self.exit_button)
+
         self.continue_texture = arcade.load_texture("images/button.png")
-        self.continue_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 + 100, widht=500, height=100, texture=self.continue_texture, text="ПРОДОЛЖИТЬ")
+        self.continue_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 + 100, widht=500, height=100, texture=self.continue_texture, text="Продолжить")
         self.continue_button.on_click = self.change_pause
         self.pause_manager.add(self.continue_button)
 
         self.exit_texture = arcade.load_texture("images/button.png")
-        self.exit_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 - 100, widht=500, height=100, texture=self.exit_texture, text="ВЫЙТИ")
+        self.exit_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 - 100, widht=500, height=100, texture=self.exit_texture, text="Выйти")
         self.exit_button.on_click = self.exit_to_menu
         self.pause_manager.add(self.exit_button)
 
@@ -116,13 +129,20 @@ class Game_View(arcade.View):
         for car in self.vertical_car_list:
             car.countdown.draw()
         self.gui_camera.use()
-        if self.paused == True:
+        if self.paused:
             arcade.draw_rect_filled(arcade.rect.XYWH(self.game_width // 2, self.game_height // 2, 800, 800), (68, 202, 100, 158))
             arcade.draw_text(text="ПАУЗА", x=self.game_width // 2, y=self.game_height - 150, color=arcade.color.WHITE, width=400, font_size=90, anchor_x="center", anchor_y="center")
             self.pause_manager.enable()
             self.pause_manager.draw()
         else:
             self.pause_manager.disable()
+        if self.dead:
+            arcade.draw_rect_filled(arcade.rect.XYWH(self.game_width // 2, self.game_height // 2, 800, 800), (28, 27, 27, 170))
+            arcade.draw_text(text="СМЕРТЬ", x=self.game_width // 2, y=self.game_height - 150, color=(105, 100, 100), width=400, font_size=90, anchor_x="center", anchor_y="center")
+            self.death_manager.enable()
+            self.death_manager.draw()
+        else:
+            self.death_manager.disable()
              
         
     def on_update(self, dt):
@@ -276,7 +296,7 @@ class Game_View(arcade.View):
                 self.make_car_start_time = time.time()
                 self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
-                    car = Car(self.game_width - 60, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
+                    car = Car(290, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
                     self.horizontal_car_list.append(car)
                 else: #  вертикаль
                     car = Car(self.game_width // 2 + random.randint(-20, 20), self.game_height + 60, self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
@@ -286,7 +306,7 @@ class Game_View(arcade.View):
             if self.add_car_time - self.start_game_time >= self.start_game_interval:
                 self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
-                    car = Car(self.game_width - 60, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
+                    car = Car(290, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
                     self.horizontal_car_list.append(car)
                 else: #  вертикаль
                     car = Car(self.game_width // 2 + random.randint(-20, 20), self.game_height + 60, self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
@@ -300,7 +320,7 @@ class Game_View(arcade.View):
     #  ну тут типа музыку стопать
 
     def death(self):
-        if self.hero.health == 4:
+        if self.hero.health == 0:
             self.dead = True
 
     def difficulty_grow(self):
@@ -324,6 +344,9 @@ class Game_View(arcade.View):
     def exit_to_menu(self, event=None):
         from menuwindow import Menu_View
         self.window.show_view(Menu_View(1600, 900))
+    
+    def restart(self, event=None):
+        self.setup()
                 
 if __name__ == "__main__":
     window = arcade.Window(1600, 900, "Игра", fullscreen=False)
