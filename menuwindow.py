@@ -26,8 +26,8 @@ class Menu_View(arcade.View):
         self.settings_sound_slider.on_change = self.update_settings_sound_slider
         self.settings_manager.add(self.settings_sound_slider)
 
-        self.settings_music_slider_text = arcade.Text(text="0", x=self.menu_width // 2 + 50, y=self.menu_height - 150, color=arcade.color.WHITE, width=400, font_size=20, anchor_x="center", anchor_y="center")
-        self.settings_sound_slider_text = arcade.Text(text="0", x=self.menu_width // 2 + 50, y=self.menu_height - 350, color=arcade.color.WHITE, width=400, font_size=20, anchor_x="center", anchor_y="center")
+        self.settings_music_slider_text = arcade.Text(text=f"Громкость музыки: 0", x=self.menu_width // 2 + 50, y=self.menu_height - 150, color=arcade.color.WHITE, width=400, font_size=20, anchor_x="center", anchor_y="center")
+        self.settings_sound_slider_text = arcade.Text(text=f"Громкость звука: 0", x=self.menu_width // 2 + 50, y=self.menu_height - 350, color=arcade.color.WHITE, width=400, font_size=20, anchor_x="center", anchor_y="center")
 
         self.settings_exit_texture = arcade.load_texture("images/button_exit.png")
         self.settings_exit_button = UITextureButton(x=self.menu_width // 2 + 320, y=self.menu_height // 2 + 300, widht=50, height=50, texture=self.settings_exit_texture) 
@@ -71,18 +71,18 @@ class Menu_View(arcade.View):
             self.settings_open = True
         else:
             self.settings_open = False
-            volumes = {"music_volume":int(self.settings_music_slider_text.text), "sound_volume":int(self.settings_sound_slider_text.text)}
+            volumes = {"music_volume":int(self.settings_music_slider_text.text.split()[-1]), "sound_volume":int(self.settings_sound_slider_text.text.split()[-1])}
             with open('volumes.json', 'w') as f:
                 json.dump(volumes, f)
 
 
     def update_settings_music_slider(self, event):
         value = int(event.new_value)
-        self.settings_music_slider_text.text = str(value)
+        self.settings_music_slider_text.text = f"Громкость музыки: {value}"
     
     def update_settings_sound_slider(self, event):
             value = int(event.new_value)
-            self.settings_sound_slider_text.text = str(value)
+            self.settings_sound_slider_text.text = f"Громкость звука: {value}"
     
     def go_to_select_level(self, event=None):
         self.window.show_view(Game_View(1600, 900))

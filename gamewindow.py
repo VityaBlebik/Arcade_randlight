@@ -1,6 +1,8 @@
 import arcade
 import random
 import time
+import json
+
 from arcade.gui import UIManager,  UITextureButton
 from pyglet.graphics import Batch
 
@@ -23,10 +25,16 @@ class Game_View(arcade.View):
         self.game_height = height
         self.texture = arcade.load_texture("images/background.png")
         db.start()
-        self.pause = False
         self.setup()
+        self.background_music = arcade.load_sound("sounds/game_music.mp3")
+        with open("volumes.json") as f:
+            self.music_settings = json.load(f)
+        self.music_volume = self.music_settings["music_volume"] / 100
+        self.sound_volume = self.music_settings["sound_volume"] / 100
 
     def setup(self):
+        self.level = 1
+        self.game_time = 0
         self.all_pause_time = 0
         self.pause_time = 0
         self.paused = False
@@ -36,7 +44,7 @@ class Game_View(arcade.View):
         self.difficulty_speed = 0
         self.health = 3
         self.hero_speed = 20
-        self.no_damage_time = 1
+        self.no_damage_time = 5
         self.car_speed0 = 50
         self.car_speed1 = 65
         self.start_game_interval0 = 2
@@ -173,7 +181,7 @@ class Game_View(arcade.View):
             self.horizontal_car_list.update(dt)
             self.vertical_car_list.update(dt)
             self.death()
-            self.time_text.text = f"Время: {int(time.time() - self.start_game_time - self.all_pause_time)}"
+            self.time_text.text = f"Время: {int(self.game_time)}"
         self.difficulty_grow()
         self.hearts = arcade.SpriteList()
         for i in range(self.hero.health):
@@ -209,9 +217,7 @@ class Game_View(arcade.View):
                 car2 = self.horizontal_car_list[car]
                 if arcade.check_for_collision(car1, car2):  
                     car1.drive = False
-                    #and car2.center_x - car2.width // 2 - car1.center_x + car1.width // 2 >= 10
                 elif car2.center_x - car2.width // 2 - car1.center_x + car1.width // 2 >= 20:
-                # elif not arcade.check_for_collision(car1, car2): #КОРОЧЕ ЕСЛИ ДАЖЕ МАШИНА ДАЛЕКО ВПЕРЕДИ, ТО ЕСЛИ СВЕТОФОР ВЫКЛЮЧЕН ИЗ-ЗА TRUE ТУТ СТОПАЕТСЯ МАШИНА
                     car1.drive = True
 
             if self.horizontal_light.status == -1:
@@ -338,17 +344,21 @@ class Game_View(arcade.View):
                 self.make_car_interval = random.uniform(self.interval0, self.interval1)
     
     def on_hide_view(self):
-        pass
-    #  ну тут типа музыку стопать
+        arcade.stop_sound(self.backgound_player)
+
+    def on_show_view(self):
+        self.backgound_player = arcade.play_sound(self.background_music, self.music_volume, loop=True)
 
     def death(self):
         if self.hero.health == 0:
             self.dead = True
             self.paused = True
+            db.add_time(self.game_time, self.level)
 
     def difficulty_grow(self):
         if not self.paused:
-            if time.time() - self.start_game_time - self.all_pause_time >= 90:
+            self.game_time = time.time() - self.start_game_time - self.all_pause_time
+            if self.game_time >= 90:
                 self.start_timer_limit = 7
                 self.interval0 = 3
                 self.interval1 = 4
