@@ -1,9 +1,8 @@
 import arcade
 import json
 
+from select_level_window import Select_level_View
 from arcade.gui import UIManager,  UITextureButton, UISlider
-from pyglet.graphics import Batch
-from gamewindow import Game_View
 
 class Menu_View(arcade.View):
     def __init__(self, width, height):
@@ -18,11 +17,11 @@ class Menu_View(arcade.View):
         self.settings_manager = UIManager()
         self.menuwindow_text = arcade.Text(text="Главное меню", x=self.menu_width // 2, y=self.menu_height - 150, color=arcade.color.WHITE, width=400, font_size=90, anchor_x="center", anchor_y="center")
         
-        self.settings_music_slider =  UISlider(x=self.menu_width // 2 - 100, y=self.menu_height // 2 + 200 , width=300, height=25, min_value=0, max_value=100, step=1, value=0)
+        self.settings_music_slider =  UISlider(x=self.menu_width // 2 - 100, y=self.menu_height // 2 + 200 , width=300, height=25, min_value=0, max_value=100, step=1, value=25)
         self.settings_music_slider.on_change = self.update_settings_music_slider
         self.settings_manager.add(self.settings_music_slider)
 
-        self.settings_sound_slider =  UISlider(x=self.menu_width // 2 - 100, y=self.menu_height // 2 , width=300, height=25, min_value=0, max_value=100, step=1, value=0)
+        self.settings_sound_slider =  UISlider(x=self.menu_width // 2 - 100, y=self.menu_height // 2 , width=300, height=25, min_value=0, max_value=100, step=1, value=25)
         self.settings_sound_slider.on_change = self.update_settings_sound_slider
         self.settings_manager.add(self.settings_sound_slider)
 
@@ -77,19 +76,19 @@ class Menu_View(arcade.View):
 
 
     def update_settings_music_slider(self, event):
-        value = int(event.new_value)
-        self.settings_music_slider_text.text = f"Громкость музыки: {value}"
+        volume_value = int(event.new_value)
+        self.settings_music_slider_text.text = f"Громкость музыки: {volume_value}"
     
     def update_settings_sound_slider(self, event):
-        value = int(event.new_value)
-        self.settings_sound_slider_text.text = f"Громкость звука: {value}"
+        volume_value= int(event.new_value)
+        self.settings_sound_slider_text.text = f"Громкость звука: {volume_value}"
     
     def go_to_select_level(self, event=None):
-        self.window.show_view(Game_View(1600, 900))
+        self.window.show_view(Select_level_View(1600, 900))
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.PAGEUP:
-            self.window.show_view(Game_View(1600, 900) ) 
+            self.window.show_view(Select_level_View(1600, 900) ) 
 
     def on_hide_view(self):
         pass

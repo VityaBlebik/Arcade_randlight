@@ -4,7 +4,6 @@ import time
 import json
 
 from arcade.gui import UIManager,  UITextureButton
-from pyglet.graphics import Batch
 
 import game_db as db
 
@@ -19,43 +18,48 @@ secreen_title = "Простая отрисовка изображения"
 
 
 class Game_View(arcade.View):
-    def __init__(self, width, height):
+    def __init__(self, width, height, settings):
         super().__init__()
         self.game_width = width
         self.game_height = height
         self.texture = arcade.load_texture("images/background.png")
         db.start()
-        self.setup()
+        self.settings = settings
         self.background_music = arcade.load_sound("sounds/game_music.mp3")
         self.health_sound = arcade.load_sound("sounds/game_sound.wav")
         with open("volumes.json") as f:
             self.music_settings = json.load(f)
         self.music_volume = self.music_settings["music_volume"] / 100
         self.sound_volume = self.music_settings["sound_volume"] / 100
+        self.setup()
 
     def setup(self):
-        self.level = 1
-        self.game_time = 0
-        self.all_pause_time = 0
-        self.pause_time = 0
-        self.start_timer_limit = 10
-        self.interval0 = 1
-        self.interval1 = 3
-        self.speed_difficulty = 0
-        self.health = 3
-        self.hero_speed = 20
-        self.no_damage_time = 5
-        self.car_speed0 = 50
-        self.car_speed1 = 65
-        self.start_game_interval0 = 2
-        self.start_game_interval1 = 4
-        self.delta_difficulty_interval = 1
-        self.start_timer_difficulty = 3
+        self.level = self.settings["level"]
+        self.start_timer_limit = self.settings["start_timer_limit"]
+        self.interval0 = self.settings["interval0"]
+        self.interval1 = self.settings["interval1"]
+        self.speed_difficulty = self.settings["speed_difficulty"]
+        self.health = self.settings["health"]
+        self.hero_speed = self.settings["hero_speed"]
+        self.no_damage_time = self.settings["no_damage_time"]
+        self.car_speed0 = self.settings["car_speed0"]
+        self.car_speed1 = self.settings["car_speed1"]
+        self.start_game_interval0 = self.settings["start_game_interval0"]
+        self.start_game_interval1 = self.settings["start_game_interval1"]
+        self.delta_difficulty_interval = self.settings["delta_difficulty_interval"]
+        self.start_timer_difficulty = self.settings["start_timer_difficulty"]
+        self.timer_top_limit = self.settings["timer_top_limit"]
+
         self.health_new = self.health
         self.paused = False
-
-        self.batch = Batch()
         self.dead = False
+        self.pause_time = 0
+        self.all_pause_time = 0
+        self.game_time = 0
+        self.start_timer_limit_new = self.start_timer_limit
+        self.interval0_new = self.interval0
+        self.interval1_new = self.interval1
+        self.speed_difficulty_new = self.speed_difficulty
 
         self.hero_list = arcade.SpriteList()
         self.horizontal_car_list = arcade.SpriteList()
@@ -196,11 +200,11 @@ class Game_View(arcade.View):
     def check_timers(self):
         for i, car in enumerate(self.horizontal_car_list):
              if car.have_timer == False:
-                car.timer_limit = min(25, self.start_timer_limit + i * 2)
+                car.timer_limit = min(self.timer_top_limit, self.start_timer_limit + i * 2)
                 car.have_timer = True
         for i, car in enumerate(self.vertical_car_list):
             if car.have_timer == False:
-                car.timer_limit = min(25, self.start_timer_limit + i * 2)
+                car.timer_limit = min(self.timer_top_limit, self.start_timer_limit + i * 2)
                 car.have_timer = True
 
         for car in self.horizontal_car_list:
@@ -361,17 +365,27 @@ class Game_View(arcade.View):
         if self.hero.health == 0:
             self.dead = True
             self.paused = True
-            db.add_time(self.game_time, self.level)
+            db.add_time(round(self.game_time, 2), self.level)
 
     def difficulty_grow(self):
         if not self.paused:
             self.game_time = time.time() - self.start_game_time - self.all_pause_time
-            if self.game_time >= 90:
-                self.start_timer_limit = 7
-                self.interval0 = 3
-                self.interval1 = 4
-                self.speed_difficulty= 15
-            # elif
+            if  60 > self.game_time >= 30:
+                self.start_timer_limit = self.start_timer_limit_new - self.start_timer_difficulty
+                self.interval0 = self.interval0_new - self.delta_difficulty_interval
+                self.interval1 = self.interval1_new - self.delta_difficulty_interval
+                self.speed_difficulty = self.speed_difficulty
+            elif 90 > self.game_time >= 60:
+                self.start_timer_limit = self.start_timer_limit_new - self.start_timer_difficulty * 2
+                self.interval0 = self.interval0_new - self.delta_difficulty_interval * 2
+                self.interval1 = self.interval1_new - self.delta_difficulty_interval * 2
+                self.speed_difficulty = self.speed_difficulty_new * 2
+            elif self.game_time >= 90:
+                self.start_timer_limit = self.start_timer_limit_new - self.start_timer_difficulty * 3
+                self.interval0 = self.interval0_new - self.delta_difficulty_interval * 3
+                self.interval1 = self.interval1_new - self.delta_difficulty_interval * 3
+                self.speed_difficulty = self.speed_difficulty_new * 3
+            
 
     
     def change_pause(self, event=None):
