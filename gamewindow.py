@@ -36,9 +36,11 @@ class Game_View(arcade.View):
         self.difficulty_speed = 0
         self.health = 3
         self.hero_speed = 20
-        self.no_damage_time = 5
+        self.no_damage_time = 1
         self.car_speed0 = 50
         self.car_speed1 = 65
+        self.start_game_interval0 = 2
+        self.start_game_interval1 = 4
 
         self.batch = Batch()
         self.dead = False
@@ -51,7 +53,7 @@ class Game_View(arcade.View):
         self.hero_list.append(self.hero)
 
         self.start_game_time = time.time()
-        self.start_game_interval = float(str(random.uniform(2, 4))[:4])
+        self.start_game_interval = float(str(random.uniform(self.start_game_interval0,  self.start_game_interval1))[:4])
         self.start_game_flag = False
 
         self.hero_walls = arcade.SpriteList()
@@ -75,9 +77,11 @@ class Game_View(arcade.View):
 
         self.pause_manager = UIManager()
         self.pause_manager.enable()
+        self.pause_text = arcade.Text(text="ПАУЗА", x=self.game_width // 2, y=self.game_height - 150, color=arcade.color.WHITE, width=400, font_size=90, anchor_x="center", anchor_y="center")
 
         self.death_manager = UIManager()
         self.death_manager.enable()
+        self.death_text = arcade.Text(text="СМЕРТЬ", x=self.game_width // 2, y=self.game_height - 150, color=(105, 100, 100), width=400, font_size=90, anchor_x="center", anchor_y="center")
 
         self.restart_texture = arcade.load_texture("images/button.png")
         self.restart_button = UITextureButton(x=self.game_width // 2 - 250, y=self.game_height // 2 + 100, widht=500, height=100, texture=self.restart_texture, text="Заново")
@@ -111,8 +115,18 @@ class Game_View(arcade.View):
             
         self.game_camera = arcade.camera.Camera2D()  # Камера для игрового мира
         self.gui_camera = arcade.camera.Camera2D()  # Камера для объектов интерфейса
-        self.game_camera.zoom = 2.0   
-         
+        self.game_camera.zoom = 2.0  
+
+        self.updated_hearts = arcade.SpriteList()
+        self.hearts = arcade.SpriteList()
+        self.heart_texture = arcade.load_texture("images/heart.png")
+        for heart in range(self.hero.health):
+            heart = arcade.Sprite(center_x=50 + heart, center_y=self.game_height - 50)
+            heart.texture = self.heart_texture
+            self.hearts.append(heart)
+        
+        self.time_text = arcade.Text(text=f"Время: {0}", x=80, y=50, color=arcade.color.WHITE, width=200, font_size=20, anchor_x="center", anchor_y="center")
+
     def on_draw(self):
         self.clear()
         self.game_camera.use()
@@ -129,16 +143,18 @@ class Game_View(arcade.View):
         for car in self.vertical_car_list:
             car.countdown.draw()
         self.gui_camera.use()
-        if self.paused:
+        self.hearts.draw()
+        self.time_text.draw()
+        if self.paused and not self.dead:
             arcade.draw_rect_filled(arcade.rect.XYWH(self.game_width // 2, self.game_height // 2, 800, 800), (68, 202, 100, 158))
-            arcade.draw_text(text="ПАУЗА", x=self.game_width // 2, y=self.game_height - 150, color=arcade.color.WHITE, width=400, font_size=90, anchor_x="center", anchor_y="center")
+            self.pause_text.draw()
             self.pause_manager.enable()
             self.pause_manager.draw()
         else:
             self.pause_manager.disable()
         if self.dead:
             arcade.draw_rect_filled(arcade.rect.XYWH(self.game_width // 2, self.game_height // 2, 800, 800), (28, 27, 27, 170))
-            arcade.draw_text(text="СМЕРТЬ", x=self.game_width // 2, y=self.game_height - 150, color=(105, 100, 100), width=400, font_size=90, anchor_x="center", anchor_y="center")
+            self.death_text.draw()
             self.death_manager.enable()
             self.death_manager.draw()
         else:
@@ -157,7 +173,13 @@ class Game_View(arcade.View):
             self.horizontal_car_list.update(dt)
             self.vertical_car_list.update(dt)
             self.death()
+            self.time_text.text = f"Время: {int(time.time() - self.start_game_time - self.all_pause_time)}"
         self.difficulty_grow()
+        self.hearts = arcade.SpriteList()
+        for i in range(self.hero.health):
+            heart = arcade.Sprite(center_x=50 + i * 50, center_y=self.game_height - 50)
+            heart.texture = self.heart_texture
+            self.hearts.append(heart)
 
     def check_timers(self):
         for i, car in enumerate(self.horizontal_car_list):
@@ -322,6 +344,7 @@ class Game_View(arcade.View):
     def death(self):
         if self.hero.health == 0:
             self.dead = True
+            self.paused = True
 
     def difficulty_grow(self):
         if not self.paused:
@@ -334,12 +357,13 @@ class Game_View(arcade.View):
 
     
     def change_pause(self, event=None):
-        if not self.paused:
-            self.paused = True
-            self.pause_time = time.time()
-        else:
-            self.paused = False
-            self.all_pause_time += time.time() - self.pause_time
+        if not self.dead:
+            if not self.paused:
+                self.paused = True
+                self.pause_time = time.time()
+            else:
+                self.paused = False
+                self.all_pause_time += time.time() - self.pause_time
     
     def exit_to_menu(self, event=None):
         from menuwindow import Menu_View
