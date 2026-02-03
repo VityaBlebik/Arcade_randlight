@@ -18,17 +18,20 @@ class Hero(arcade.Sprite):
         self.current_texture = 0
         self.walk_textures = []
         self.is_walking = False
+        self.damage_no_timer_start = 0
 
         for i in range(0, 6):
             texture = arcade.load_texture(f"images/hero{i}.png")
             self.walk_textures.append(texture)
         
     def update(self, dt):
-        old_x = self.center_x
-        old_y = self.center_y
         self.center_x += self.change_x
         self.center_y += self.change_y
-        self.is_walking = self.center_x != old_x or self.center_y != old_y
+        self.is_walking = self.change_x != 0 or self.change_y != 0
+        if self.change_x < 0:
+            self.scale_x = -1
+        else:
+            self.scale_x = 1
         
     def update_animation(self, delta_time: float = 1/60):
         """ Обновление анимации """
@@ -47,6 +50,5 @@ class Hero(arcade.Sprite):
             self.damage_no = False
             self.health -= 1
         self.damage_no_timer_end = time.time()
-        if self.damage_no_timer_end - self.damage_no_timer_start >= 5:
+        if self.damage_no_timer_end - self.damage_no_timer_start >= self.no_damage_time:
             self.damage_no = True
-        

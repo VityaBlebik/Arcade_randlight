@@ -27,6 +27,7 @@ class Game_View(arcade.View):
         db.start()
         self.setup()
         self.background_music = arcade.load_sound("sounds/game_music.mp3")
+        self.health_sound = arcade.load_sound("sounds/game_sound.wav")
         with open("volumes.json") as f:
             self.music_settings = json.load(f)
         self.music_volume = self.music_settings["music_volume"] / 100
@@ -37,11 +38,10 @@ class Game_View(arcade.View):
         self.game_time = 0
         self.all_pause_time = 0
         self.pause_time = 0
-        self.paused = False
         self.start_timer_limit = 10
         self.interval0 = 1
         self.interval1 = 3
-        self.difficulty_speed = 0
+        self.speed_difficulty = 0
         self.health = 3
         self.hero_speed = 20
         self.no_damage_time = 5
@@ -49,6 +49,10 @@ class Game_View(arcade.View):
         self.car_speed1 = 65
         self.start_game_interval0 = 2
         self.start_game_interval1 = 4
+        self.delta_difficulty_interval = 1
+        self.start_timer_difficulty = 3
+        self.health_new = self.health
+        self.paused = False
 
         self.batch = Batch()
         self.dead = False
@@ -261,10 +265,14 @@ class Game_View(arcade.View):
                 removed_cars = arcade.check_for_collision_with_list(car, self.vertical_car_list)
                 if len(removed_cars) > 0:
                     self.hero.get_damage()
+                    self.hero.get_damage()
                     for removed_car in removed_cars:
                         removed_car.remove_from_sprite_lists()
                     car.remove_from_sprite_lists()
 
+            if self.hero.health < self.health_new:
+                self.health_new = self.hero.health
+                self.health_sound.play()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.W:
@@ -324,20 +332,20 @@ class Game_View(arcade.View):
                 self.make_car_start_time = time.time()
                 self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
-                    car = Car(290, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
+                    car = Car(290, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.speed_difficulty)
                     self.horizontal_car_list.append(car)
                 else: #  вертикаль
-                    car = Car(self.game_width // 2 + random.randint(-20, 20), self.game_height + 60, self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
+                    car = Car(self.game_width // 2 + random.randint(-20, 20), self.game_height + 60, self.place, self.car_speed0, self.car_speed1,self.speed_difficulty)
                     self.vertical_car_list.append(car)
         else:
             self.add_car_time = time.time()
             if self.add_car_time - self.start_game_time >= self.start_game_interval:
                 self.place = random.choice([0, 1])
                 if self.place == 0: #  горизонталь
-                    car = Car(290, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
+                    car = Car(290, self.game_height // 2 + random.randint(-20, 20), self.place, self.car_speed0, self.car_speed1, self.speed_difficulty)
                     self.horizontal_car_list.append(car)
                 else: #  вертикаль
-                    car = Car(self.game_width // 2 + random.randint(-20, 20), self.game_height + 60, self.place, self.car_speed0, self.car_speed1, self.difficulty_speed)
+                    car = Car(self.game_width // 2 + random.randint(-20, 20), self.game_height + 60, self.place, self.car_speed0, self.car_speed1, self.speed_difficulty)
                     self.vertical_car_list.append(car)
                 self.start_game_flag = True
                 self.make_car_start_time = time.time()
@@ -362,7 +370,7 @@ class Game_View(arcade.View):
                 self.start_timer_limit = 7
                 self.interval0 = 3
                 self.interval1 = 4
-                self.difficulty_speed = 15
+                self.speed_difficulty= 15
             # elif
 
     
