@@ -36,6 +36,9 @@ class Game_View(arcade.View):
         self.music_volume = self.music_settings["music_volume"] / 100
         self.sound_volume = self.music_settings["sound_volume"] / 100
 
+        self.background_player = arcade.play_sound(self.background_music, self.music_volume, loop=True)
+        self.background_player.play()
+
         self.level = self.settings["level"]
         self.start_timer_limit = self.settings["start_timer_limit"]
         self.interval0 = self.settings["interval0"]
@@ -394,9 +397,6 @@ class Game_View(arcade.View):
     
     def on_hide_view(self):
         arcade.stop_sound(self.background_player)
-
-    def on_show_view(self):
-        self.background_player = arcade.play_sound(self.background_music, self.music_volume, loop=True)
 
     def death(self):
         if self.hero.health == 0:
