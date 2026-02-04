@@ -8,7 +8,7 @@ class Light(arcade.Sprite):
         self.center_y = center_y
         self.change_texture(self.status, self.place)
     
-    def change_status(self, event):
+    def change_status(self, event=None):
         self.status *= -1
         self.change_texture(self.status, self.place)
     
