@@ -20,7 +20,7 @@ class Hero(arcade.Sprite):
         self.is_walking = False
         self.damage_no_timer_start = 0
 
-        for i in range(0, 6):
+        for i in range(0, 5):
             texture = arcade.load_texture(f"images/hero{i}.png")
             self.walk_textures.append(texture)
         
