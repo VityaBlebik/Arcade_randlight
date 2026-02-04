@@ -10,7 +10,7 @@ class Hero(arcade.Sprite):
         self.speed = speed
         self.health = health
         self.damage_no = True
-        self.default_texture = arcade.load_texture("images/hero.png")
+        self.default_texture = arcade.load_texture("images/heroo.png")
         self.texture = self.default_texture
         self.center_x = start_x
         self.center_y = start_y
@@ -21,7 +21,7 @@ class Hero(arcade.Sprite):
         self.damage_no_timer_start = 0
 
         for i in range(0, 6):
-            texture = arcade.load_texture(f"images/hero{i}.png")
+            texture = arcade.load_texture(f"images/heroo{i}.png")
             self.walk_textures.append(texture)
         
     def update(self, dt):
