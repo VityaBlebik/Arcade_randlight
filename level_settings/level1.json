@@ -12,4 +12,6 @@
 "start_game_interval1": 3,
 "delta_difficulty_interval": 1,
 "start_timer_difficulty": 3,
-"timer_top_limit": 30}
+"timer_top_limit": 30,
+"random_accident0": 9,
+"random_accident1": 15}

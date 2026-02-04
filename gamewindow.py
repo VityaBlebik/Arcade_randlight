@@ -4,6 +4,7 @@ import time
 import json
 
 from arcade.gui import UIManager,  UITextureButton
+from arcade.particles import FadeParticle, Emitter, EmitBurst
 
 import game_db as db
 
@@ -25,15 +26,16 @@ class Game_View(arcade.View):
         self.texture = arcade.load_texture("images/background.png")
         db.start()
         self.settings = settings
+        self.setup()
+
+    def setup(self):
         self.background_music = arcade.load_sound("sounds/game_music.mp3")
         self.health_sound = arcade.load_sound("sounds/game_sound.wav")
         with open("volumes.json") as f:
             self.music_settings = json.load(f)
         self.music_volume = self.music_settings["music_volume"] / 100
         self.sound_volume = self.music_settings["sound_volume"] / 100
-        self.setup()
 
-    def setup(self):
         self.level = self.settings["level"]
         self.start_timer_limit = self.settings["start_timer_limit"]
         self.interval0 = self.settings["interval0"]
@@ -49,6 +51,8 @@ class Game_View(arcade.View):
         self.delta_difficulty_interval = self.settings["delta_difficulty_interval"]
         self.start_timer_difficulty = self.settings["start_timer_difficulty"]
         self.timer_top_limit = self.settings["timer_top_limit"]
+        self.random_accident0 = self.settings["random_accident0"]
+        self.random_accident1 = self.settings["random_accident1"]
 
         self.health_new = self.health
         self.paused = False
@@ -60,6 +64,9 @@ class Game_View(arcade.View):
         self.interval0_new = self.interval0
         self.interval1_new = self.interval1
         self.speed_difficulty_new = self.speed_difficulty
+        self.random_accident0_new = self.random_accident0
+        self.random_accident1_new = self.random_accident1
+        self.dt = 0
 
         self.hero_list = arcade.SpriteList()
         self.horizontal_car_list = arcade.SpriteList()
@@ -92,11 +99,9 @@ class Game_View(arcade.View):
         self.light_manager.enable()
 
         self.pause_manager = UIManager()
-        self.pause_manager.enable()
         self.pause_text = arcade.Text(text="ПАУЗА", x=self.game_width // 2, y=self.game_height - 150, color=arcade.color.WHITE, width=400, font_size=90, anchor_x="center", anchor_y="center")
 
         self.death_manager = UIManager()
-        self.death_manager.enable()
         self.death_text = arcade.Text(text="СМЕРТЬ", x=self.game_width // 2, y=self.game_height - 150, color=(105, 100, 100), width=400, font_size=90, anchor_x="center", anchor_y="center")
 
         self.restart_texture = arcade.load_texture("images/button.png")
@@ -133,6 +138,9 @@ class Game_View(arcade.View):
         self.gui_camera = arcade.camera.Camera2D()  # Камера для объектов интерфейса
         self.game_camera.zoom = 2.0  
 
+        self.pause_manager.disable()
+        self.death_manager.disable()
+
         self.updated_hearts = arcade.SpriteList()
         self.hearts = arcade.SpriteList()
         self.heart_texture = arcade.load_texture("images/heart.png")
@@ -142,7 +150,23 @@ class Game_View(arcade.View):
             self.hearts.append(heart)
         
         self.time_text = arcade.Text(text=f"Время: {0}", x=80, y=50, color=arcade.color.WHITE, width=200, font_size=20, anchor_x="center", anchor_y="center")
+        
+        self.emitters = []
+        self.particle_list = [arcade.load_texture("images/explosion1.png"), arcade.load_texture("images/explosion2.png"), arcade.load_texture("images/explosion3.png"),]
 
+
+    def make_explosion(self, x, y, count=100):
+        return Emitter(
+            center_xy=(x, y),
+            emit_controller=EmitBurst(count),
+            particle_factory=lambda e: FadeParticle(
+                filename_or_texture=random.choice(self.particle_list),
+                change_xy=arcade.math.rand_in_circle((0.0, 0.0), 4.2),
+                lifetime=1,
+                start_alpha=255, end_alpha=0,
+                scale=random.uniform(0.35, 0.9),),)
+
+    
     def on_draw(self):
         self.clear()
         self.game_camera.use()
@@ -168,6 +192,7 @@ class Game_View(arcade.View):
             self.pause_manager.draw()
         else:
             self.pause_manager.disable()
+            
         if self.dead:
             arcade.draw_rect_filled(arcade.rect.XYWH(self.game_width // 2, self.game_height // 2, 800, 800), (28, 27, 27, 170))
             self.death_text.draw()
@@ -175,15 +200,18 @@ class Game_View(arcade.View):
             self.death_manager.draw()
         else:
             self.death_manager.disable()
-             
+
+        for e in self.emitters:
+            e.draw()
         
     def on_update(self, dt):
+        self.dt = dt
         if not self.paused:
-            self.dt = dt
             self.hero_physics_engine.update()
             self.hero.update(dt)
             self.hero.update_animation(dt)
             self.make_car()
+            self.random_accidents()
             self.check_collisions()
             self.check_timers()
             self.horizontal_car_list.update(dt)
@@ -196,6 +224,12 @@ class Game_View(arcade.View):
             heart = arcade.Sprite(center_x=50 + i * 50, center_y=self.game_height - 50)
             heart.texture = self.heart_texture
             self.hearts.append(heart)
+        emitters_copy = self.emitters.copy()
+        for e in emitters_copy:
+            e.update(dt)
+        for e in emitters_copy:
+            if e.can_reap():
+                self.emitters.remove(e)
 
     def check_timers(self):
         for i, car in enumerate(self.horizontal_car_list):
@@ -273,10 +307,11 @@ class Game_View(arcade.View):
                     for removed_car in removed_cars:
                         removed_car.remove_from_sprite_lists()
                     car.remove_from_sprite_lists()
+                    self.emitters.append(self.make_explosion(car.center_x, car.center_y))
 
             if self.hero.health < self.health_new:
                 self.health_new = self.hero.health
-                self.health_sound.play()
+                self.health_sound.play(self.sound_volume)
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.W:
@@ -354,17 +389,20 @@ class Game_View(arcade.View):
                 self.start_game_flag = True
                 self.make_car_start_time = time.time()
                 self.make_car_interval = random.uniform(self.interval0, self.interval1)
+                self.random_accident_interval = random.uniform(self.random_accident0, self.random_accident1)
+                self.random_accident_start_time = time.time()
     
     def on_hide_view(self):
-        arcade.stop_sound(self.backgound_player)
+        arcade.stop_sound(self.background_player)
 
     def on_show_view(self):
-        self.backgound_player = arcade.play_sound(self.background_music, self.music_volume, loop=True)
+        self.background_player = arcade.play_sound(self.background_music, self.music_volume, loop=True)
 
     def death(self):
         if self.hero.health == 0:
             self.dead = True
             self.paused = True
+            self.background_player.pause()
             db.add_time(round(self.game_time, 2), self.level)
 
     def difficulty_grow(self):
@@ -374,37 +412,71 @@ class Game_View(arcade.View):
                 self.start_timer_limit = self.start_timer_limit_new - self.start_timer_difficulty
                 self.interval0 = self.interval0_new - self.delta_difficulty_interval
                 self.interval1 = self.interval1_new - self.delta_difficulty_interval
+                self.random_accident0 = self.random_accident0_new - self.delta_difficulty_interval
+                self.random_accident1 = self.random_accident1_new - self.delta_difficulty_interval
                 self.speed_difficulty = self.speed_difficulty
             elif 90 > self.game_time >= 60:
                 self.start_timer_limit = self.start_timer_limit_new - self.start_timer_difficulty * 2
                 self.interval0 = self.interval0_new - self.delta_difficulty_interval * 2
                 self.interval1 = self.interval1_new - self.delta_difficulty_interval * 2
+                self.random_accident0 = self.random_accident0_new - self.delta_difficulty_interval * 2
+                self.random_accident1 = self.random_accident1_new - self.delta_difficulty_interval * 2
                 self.speed_difficulty = self.speed_difficulty_new * 2
-            elif self.game_time >= 90:
+            elif 120 > self.game_time >= 90:
                 self.start_timer_limit = self.start_timer_limit_new - self.start_timer_difficulty * 3
                 self.interval0 = self.interval0_new - self.delta_difficulty_interval * 3
                 self.interval1 = self.interval1_new - self.delta_difficulty_interval * 3
+                self.random_accident0 = self.random_accident0_new - self.delta_difficulty_interval * 3
+                self.random_accident1 = self.random_accident1_new - self.delta_difficulty_interval * 3
                 self.speed_difficulty = self.speed_difficulty_new * 3
-            
+            elif 120 > self.game_time >= 90:
+                self.start_timer_limit = self.start_timer_limit_new - self.start_timer_difficulty * 3.5
+                self.interval0 = self.interval0_new - self.delta_difficulty_interval * 3.5
+                self.interval1 = self.interval1_new - self.delta_difficulty_interval * 3.5
+                self.random_accident0 = self.random_accident0_new - self.delta_difficulty_interval * 3.5
+                self.random_accident1 = self.random_accident1_new - self.delta_difficulty_interval * 3.5
+                self.speed_difficulty = self.speed_difficulty_new * 3.5
 
-    
+    def random_accidents(self):
+        if self.start_game_flag:
+            self.random_accident_end_time = time.time()
+            if self.random_accident_end_time - self.random_accident_start_time >= self.random_accident_interval:
+                self.random_accident_interval = random.uniform(self.random_accident0, self.random_accident1)
+                self.random_accident_start_time = time.time()
+                self.chance = random.randint(1, 100)
+                if self.chance < 33:
+                    self.hero.speed += random.randint(-6, 7)
+                    print("смена скорости")
+                elif 66 > self.chance >= 33:
+                    self.vertical_light.change_status()
+                    self.horizontal_light.change_status()
+                    print("смена статуса")
+                elif self.chance >= 66:
+                    for car in self.horizontal_car_list:
+                        car.speed += random.randint(-15, 15)
+                    for car in self.vertical_car_list:
+                        car.speed += random.randint(-15, 15)
+                    print("смена скорости машиночек")
+            
+            
     def change_pause(self, event=None):
         if not self.dead:
             if not self.paused:
                 self.paused = True
+                self.background_player.pause()
                 self.pause_time = time.time()
             else:
                 self.paused = False
+                self.background_player.play()
                 self.all_pause_time += time.time() - self.pause_time
     
     def exit_to_menu(self, event=None):
         from menuwindow import Menu_View
+        self.death_manager.disable()
+        self.pause_manager.disable()
+        self.light_manager.disable()
         self.window.show_view(Menu_View(1600, 900))
     
     def restart(self, event=None):
         self.setup()
-                
-if __name__ == "__main__":
-    window = arcade.Window(1600, 900, "Игра", fullscreen=False)
-    window.show_view(Game_View(1600, 900))
-    arcade.run()
+
