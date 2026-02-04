@@ -40,33 +40,29 @@ class Select_level_View(arcade.View):
             self.level_button.on_click = lambda event, lvl=i: self.open_level(lvl)
             self.select_level_manager.add(self.level_button)
 
+        with open("volumes.json") as f:
+            self.music_settings = json.load(f)
+        self.music_volume = self.music_settings["music_volume"] / 100
+        self.sound_volume = self.music_settings["sound_volume"] / 100
+
+        self.click_sound = arcade.load_sound("sounds/menu_sound.wav",)
+
+
     def on_draw(self):
         self.clear()
         self.select_level_window_text.draw()
         self.select_level_manager.draw()
         self.batch.draw()
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.SPACE:
-            self.window.show_view(Game_View(1600, 900) ) 
             
     def exit_to_menu(self, event=None):
+        arcade.play_sound(self.click_sound, volume=self.sound_volume)
         from menuwindow import Menu_View
+        self.select_level_manager.disable()
         self.window.show_view(Menu_View(1600, 900))
-
-    def on_show_view(self):
-        pass
-
-    def on_hide_view(self):
-        pass
-    #тоже выключить музыку
     
     def open_level(self, level, event=None):
+        arcade.play_sound(self.click_sound, volume=self.sound_volume)
+        self.select_level_manager.disable()
         with open(f"level_settings/level{level}.json") as f:
             self.level_settings = json.load(f)
-        self.window.show_view(Game_View(1600, 900, self.level_settings)) 
-
-if __name__ == "__main__":
-    window = arcade.Window(1600, 900, "Игра", fullscreen=False)
-    window.show_view(Select_level_View(1600, 900))
-    arcade.run()
+            self.window.show_view( Game_View(1600, 900, self.level_settings)) 
