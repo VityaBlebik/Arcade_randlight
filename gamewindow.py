@@ -446,17 +446,14 @@ class Game_View(arcade.View):
                 self.chance = random.randint(1, 100)
                 if self.chance < 33:
                     self.hero.speed += random.randint(-6, 7)
-                    print("смена скорости")
                 elif 66 > self.chance >= 33:
                     self.vertical_light.change_status()
                     self.horizontal_light.change_status()
-                    print("смена статуса")
                 elif self.chance >= 66:
                     for car in self.horizontal_car_list:
                         car.speed += random.randint(-15, 15)
                     for car in self.vertical_car_list:
                         car.speed += random.randint(-15, 15)
-                    print("смена скорости машиночек")
             
             
     def change_pause(self, event=None):

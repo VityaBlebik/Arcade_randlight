@@ -15,7 +15,7 @@ class Menu_View(arcade.View):
         self.menu_manager = UIManager()
         self.menu_manager.enable()
         self.settings_manager = UIManager()
-        self.menuwindow_text = arcade.Text(text="Главное меню", x=self.menu_width // 2, y=self.menu_height - 150, color=arcade.color.WHITE, width=400, font_size=90, anchor_x="center", anchor_y="center")
+        self.menuwindow_text = arcade.Text(text="Randlight accidents", x=self.menu_width // 2, y=self.menu_height - 150, color=arcade.color.WHITE, width=400, font_size=90, anchor_x="center", anchor_y="center")
         
         self.settings_music_slider =  UISlider(x=self.menu_width // 2 - 100, y=self.menu_height // 2 + 200 , width=300, height=25, min_value=0, max_value=100, step=1, value=25)
         self.settings_music_slider.on_change = self.update_settings_music_slider
